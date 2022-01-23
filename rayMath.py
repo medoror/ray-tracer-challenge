@@ -173,10 +173,11 @@ class Color:
 
 
 class Canvas:
-    def __init__(self, width, height, fill=Color(0, 0, 0)):
+    def __init__(self, width, height, fill=Color(0, 0, 0), max_color_value=255):
         self.width = width
         self.height = height
         self.pixels = [[fill for x in range(width)] for y in range(height)]
+        self.max_color_value = max_color_value
 
 
 def write_pixel(canvas, x, y, color):
@@ -192,7 +193,7 @@ def canvas_to_ppm(canvas, file_path="canvas.ppm"):
     with open(file_path, "w") as file:
         file.write("P3\n")
         file.write("{0} {1}\n".format(canvas.width, canvas.height))
-        file.write("255\n")
+        file.write("{0}\n".format(canvas.max_color_value))
 
         charsLength = 0
         for row in range(canvas.height):
@@ -233,13 +234,13 @@ def canvas_to_ppm(canvas, file_path="canvas.ppm"):
         file.write("\n")
 
 
-def calc_ppm_value(color_value):
+def calc_ppm_value(color_value, max_value=255):
     if color_value >= 1:
-        return 255
+        return max_value
     elif color_value <= 0:
         return 0
     else:
-        return int(ceil(255 * color_value))
+        return int(ceil(max_value * color_value))
 
 
 def magnitude(vector):
