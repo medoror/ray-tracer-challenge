@@ -1,6 +1,7 @@
 from math import sqrt, fabs, ceil
 
 EPSILON = 0.0001
+MAX_CHARACTER_LENGTH = 70
 
 
 class Tuple:
@@ -205,7 +206,7 @@ def canvas_to_ppm(canvas, file_path="canvas.ppm"):
 
                 vals = ppm_red, ppm_green, ppm_blue
                 for val in vals:
-                    if charsLength + len(val) <= 70:
+                    if charsLength + len(val) <= MAX_CHARACTER_LENGTH:
                         file.write(val)
                         charsLength += len(val)
                     else:
