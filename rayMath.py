@@ -203,32 +203,16 @@ def canvas_to_ppm(canvas, file_path="canvas.ppm"):
                 ppm_green = "{0} ".format(calc_ppm_value(color.tuple.y))
                 ppm_blue = "{0} ".format(calc_ppm_value(color.tuple.z))
 
-                if charsLength + len(ppm_red) <= 70:
-                    file.write(ppm_red)
-                    charsLength += len(ppm_red)
-                else:
-                    file.write("\n")
-                    charsLength = 0
-                    file.write(ppm_red)
-                    charsLength += len(ppm_red)
-
-                if charsLength + len(ppm_green) <= 70:
-                    file.write(ppm_green)
-                    charsLength += len(ppm_green)
-                else:
-                    file.write("\n")
-                    charsLength = 0
-                    file.write(ppm_green)
-                    charsLength += len(ppm_green)
-                if charsLength + len(ppm_blue) <= 70:
-                    file.write(ppm_blue)
-                    charsLength += len(ppm_blue)
-                else:
-                    file.write("\n")
-                    charsLength = 0
-                    file.write(ppm_blue)
-                    charsLength += len(ppm_blue)
-
+                vals = ppm_red, ppm_green, ppm_blue
+                for val in vals:
+                    if charsLength + len(val) <= 70:
+                        file.write(val)
+                        charsLength += len(val)
+                    else:
+                        file.write("\n")
+                        charsLength = 0
+                        file.write(val)
+                        charsLength += len(val)
             file.write("\n")
             charsLength = 0
         file.write("\n")
