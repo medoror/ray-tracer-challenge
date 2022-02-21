@@ -1,9 +1,9 @@
 import unittest
 import tempfile
 
-from rayMath import Color, Tuple, Point, Vector, \
+from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
-    pixel_at, canvas_to_ppm
+    pixel_at, canvas_to_ppm, transpose, determinant, submatrix
 from math import sqrt
 
 
@@ -212,6 +212,154 @@ class TestRayMath(unittest.TestCase):
         with open(outfile_path, 'r') as f:
             contents = f.readlines()
             self.assertEqual(contents[-1], "\n")
+
+    def test_construct_and_inspect_4x4_matrix(self):
+        M = Matrix([[1, 2, 3, 4],
+                    [5.5, 6.5, 7.5, 8.5],
+                    [9, 10, 11, 12],
+                    [13.5, 14.5, 15.5, 16.5]])
+
+        self.assertEqual(M[0, 0], 1)
+        self.assertEqual(M[1, 0], 5.5)
+        self.assertEqual(M[1, 0], 5.5)
+        self.assertEqual(M[1, 2], 7.5)
+        self.assertEqual(M[2, 2], 11)
+        self.assertEqual(M[3, 0], 13.5)
+        self.assertEqual(M[3, 2], 15.5)
+
+    def test_construct_and_inspect_2x2_matrix(self):
+        M = Matrix([[-3, 5],
+                    [1, -2]])
+        self.assertEqual(M[0, 0], -3)
+        self.assertEqual(M[0, 1], 5)
+        self.assertEqual(M[1, 0], 1)
+        self.assertEqual(M[1, 1], -2)
+
+    def test_construct_and_inspect_3x3_matrix(self):
+        M = Matrix([[-3, 5, 0],
+                    [1, -2, -7],
+                    [0, 1, 1]])
+        self.assertEqual(M[0, 0], -3)
+        self.assertEqual(M[1, 1], -2)
+        self.assertEqual(M[2, 2], 1)
+
+    def test_matrix_equality_with_identical_matrices(self):
+        A = Matrix([[1, 2, 3, 4],
+                    [5, 6, 7, 8],
+                    [9, 8, 7, 6],
+                    [5, 4, 3, 2]])
+
+        B = Matrix([[1, 2, 3, 4],
+                    [5, 6, 7, 8],
+                    [9, 8, 7, 6],
+                    [5, 4, 3, 2]])
+
+        self.assertEqual(A, B)
+
+    def test_matrix_equality_with_different_matrices(self):
+        A = [[1, 2, 3, 4],
+             [5, 6, 7, 8],
+             [9, 8, 7, 6],
+             [5, 4, 3, 2]]
+
+        B = [[2, 3, 4, 8],
+             [6, 7, 8, 9],
+             [8, 7, 6, 5],
+             [4, 3, 2, 1]]
+
+        self.assertNotEqual(A, B)
+
+    def test_multiplying_two_matrices(self):
+        A = Matrix([[1, 2, 3, 4],
+                    [5, 6, 7, 8],
+                    [9, 8, 7, 6],
+                    [5, 4, 3, 2]])
+
+        B = Matrix([[-2, 1, 2, 3],
+                    [3, 2, 1, -1],
+                    [4, 3, 6, 5],
+                    [1, 2, 7, 8]])
+
+        C = Matrix([[20, 22, 50, 48],
+                    [44, 54, 114, 108],
+                    [40, 58, 110, 102],
+                    [16, 26, 46, 42]])
+        self.assertEqual(A * B, C)
+
+    def test_multiplying_matrix_by_tuple(self):
+        A = Matrix([[1, 2, 3, 4],
+                    [2, 4, 4, 2],
+                    [8, 6, 4, 1],
+                    [0, 0, 0, 1]])
+
+        b = Tuple(1, 2, 3, 1)
+
+        C = Tuple(18, 24, 33, 1)
+        self.assertEqual(A * b, C)
+
+    def test_multiplying_matrix_by_identity_matrix(self):
+        A = Matrix([[0, 1, 2, 4],
+                    [1, 2, 4, 8],
+                    [2, 4, 8, 16],
+                    [4, 8, 16, 32]])
+
+        identity_matrix = Matrix([[1, 0, 0, 0],
+                                  [0, 1, 0, 0],
+                                  [0, 0, 1, 0],
+                                  [0, 0, 0, 1]])
+
+        self.assertEqual(A * identity_matrix, A)
+
+    def test_multiplying_identity_matrix_by_tuple(self):
+
+        identity_matrix = Matrix([[1, 0, 0, 0],
+                                  [0, 1, 0, 0],
+                                  [0, 0, 1, 0],
+                                  [0, 0, 0, 1]])
+
+        a = Tuple(1, 2, 3, 4)
+
+        self.assertEqual(identity_matrix * a, a)
+
+    def test_transposing_matrix(self):
+        A = Matrix([[0, 9, 3, 0],
+                    [9, 8, 0, 8],
+                    [1, 8, 5, 3],
+                    [0, 0, 5, 8]])
+
+        self.assertEqual(transpose(A), Matrix([[0, 9, 1, 0],
+                                               [9, 8, 8, 0],
+                                               [3, 0, 5, 5],
+                                               [0, 8, 3, 8]]))
+
+    def test_transposing_identity_matrix_gives_identity_matrix(self):
+        identity_matrix = Matrix([[1, 0, 0, 0],
+                                  [0, 1, 0, 0],
+                                  [0, 0, 1, 0],
+                                  [0, 0, 0, 1]])
+        A = transpose(identity_matrix)
+        self.assertEqual(A, identity_matrix)
+
+    def test_calculate_determinant_of_2x2_matrix(self):
+        A = Matrix([[1, 5], [-3, 2]])
+
+        self.assertEqual(determinant(A), 17)
+
+    def test_submatrix_of_3x3_matrix_is_a_2x2_matrix(self):
+        A = Matrix([[1, 5, 0],
+                    [-3, 2, 7],
+                    [0, 6, 3]])
+        self.assertEqual(submatrix(A, 0, 2), Matrix([[-3, 2], [0, 6]]))
+
+    def test_submatrix_of_4x4_matrix_is_a_3x3_matrix(self):
+        A = Matrix([[-6, 1, 1, 6],
+                    [-8, 5, 8, 6],
+                    [-1, 0, 8, 2],
+                    [-7, 1, -1, 1]])
+
+        self.assertEqual(submatrix(A, 2, 1), Matrix([[-6, 1, 6],
+                                                     [-8, 8, 6],
+                                                     [-7, -1, 1]]))
 
 
 if __name__ == '__main__':

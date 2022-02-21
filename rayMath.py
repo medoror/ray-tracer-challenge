@@ -4,6 +4,55 @@ EPSILON = 0.0001
 MAX_CHARACTER_LENGTH = 70
 
 
+class Matrix:
+    def __init__(self, matrix):
+        self.matrix = matrix
+
+    def __len__(self):
+        if type(self.matrix) is list:
+            return len(self.matrix)
+
+    def __getitem__(self, indices):
+        if type(indices) is tuple:
+            return self.matrix[indices[0]][indices[1]]
+        else:
+            return self.matrix[indices]
+
+    def __eq__(self, other):
+        if isinstance(other, Matrix):
+            return self.matrix == other.matrix
+        return False
+
+    def __mul__(self, other):
+        if isinstance(other, Matrix):
+            return self.matrix_multiply(self.matrix, other.matrix)
+
+        if isinstance(other, Tuple):
+            convert_to_matrix = Matrix([[other.x],
+                                        [other.y],
+                                        [other.z],
+                                        [other.w]])
+            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
+            return Tuple(new_matrix[0, 0],
+                         new_matrix[1, 0],
+                         new_matrix[2, 0],
+                         new_matrix[3, 0])
+
+    @staticmethod
+    def matrix_multiply(m1, m2):
+        subRow = []
+        returnMatrix = []
+        for i in range(len(m1)):
+            for j in range(len(m2[0])):
+                sums = 0
+                for k in range(len(m2)):
+                    sums = sums + (m1[i][k] * m2[k][j])
+                subRow.append(sums)
+            returnMatrix.append(subRow)
+            subRow = []
+        return Matrix(returnMatrix)
+
+
 class Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
         self.x = x
@@ -253,3 +302,35 @@ def cross(a, b):
     return Vector(a.tuple.y * b.tuple.z - a.tuple.z * b.tuple.y,
                   a.tuple.z * b.tuple.x - a.tuple.x * b.tuple.z,
                   a.tuple.x * b.tuple.y - a.tuple.y * b.tuple.x)
+
+
+def transpose(matrix):
+    rows = len(matrix)
+    columns = len(matrix[0])
+
+    return_matrix = []
+    for j in range(columns):
+        row = []
+        for i in range(rows):
+            row.append(matrix[i][j])
+        return_matrix.append(row)
+    return Matrix(return_matrix)
+
+
+def determinant(matrix):
+    return matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
+
+
+# Can this be done better?
+# more pythonic?
+# maybe use del instead of remove for both row and column for symmetry?
+def submatrix(matrix, row, col):
+    # make a copy of the matrix which will be returned
+    return_matrix = matrix[:]
+    # remove row
+    return_matrix.remove(matrix[row])
+    # delete each cel in the column
+    for i in range(3): # TODO: need to get the size of the column here
+        del (return_matrix[i][col])
+
+    return Matrix(return_matrix)
