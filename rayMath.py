@@ -1,5 +1,7 @@
 from math import sqrt, fabs, ceil
 
+import copy
+
 EPSILON = 0.0001
 MAX_CHARACTER_LENGTH = 70
 
@@ -318,19 +320,35 @@ def transpose(matrix):
 
 
 def determinant(matrix):
-    return matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
+    det = 0
+    if len(matrix) == 2:
+        det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
+    else:
+        for column in range(len(matrix)):
+            det = det + matrix[0, column] * cofactor(matrix, 0, column)
+    return det
 
 
 # Can this be done better?
 # more pythonic?
-# maybe use del instead of remove for both row and column for symmetry?
 def submatrix(matrix, row, col):
-    # make a copy of the matrix which will be returned
-    return_matrix = matrix[:]
-    # remove row
+    # make a deep copy of the matrix which will be returned
+    return_matrix = copy.deepcopy(matrix.matrix)
+    # remove the row first
     return_matrix.remove(matrix[row])
-    # delete each cel in the column
-    for i in range(3): # TODO: need to get the size of the column here
+    # delete the columns cells in place
+    columns = len(matrix[0]) - 1
+    for i in range(columns):
         del (return_matrix[i][col])
 
     return Matrix(return_matrix)
+
+
+def minor(matrix, row, column):
+    A = submatrix(matrix, row, column)
+    return determinant(A)
+
+
+def cofactor(matrix, row, column):
+    m = minor(matrix, row, column)
+    return m * -1 if (row + column) % 2 != 0 else m

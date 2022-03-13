@@ -3,7 +3,8 @@ import tempfile
 
 from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
-    pixel_at, canvas_to_ppm, transpose, determinant, submatrix
+    pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
+    minor, cofactor
 from math import sqrt
 
 
@@ -349,7 +350,8 @@ class TestRayMath(unittest.TestCase):
         A = Matrix([[1, 5, 0],
                     [-3, 2, 7],
                     [0, 6, 3]])
-        self.assertEqual(submatrix(A, 0, 2), Matrix([[-3, 2], [0, 6]]))
+        self.assertEqual(submatrix(A, 0, 2), Matrix([[-3, 2],
+                                                     [0, 6]]))
 
     def test_submatrix_of_4x4_matrix_is_a_3x3_matrix(self):
         A = Matrix([[-6, 1, 1, 6],
@@ -361,6 +363,50 @@ class TestRayMath(unittest.TestCase):
                                                      [-8, 8, 6],
                                                      [-7, -1, 1]]))
 
+    def test_calculate_minor_of_3x3_matrix(self):
+        A = Matrix([[3, 5, 0],
+                    [2, -1, -7],
+                    [6, -1, 5]])
+
+        self.assertEqual(minor(A, 1, 0), 25)
+
+    def test_calculate_cofactor_of_3x3_matrix(self):
+        A = Matrix([[3, 5, 0],
+                    [2, -1, -7],
+                    [6, -1, 5]])
+
+        self.assertEqual(minor(A, 0, 0), -12)
+        self.assertEqual(cofactor(A, 0, 0), -12)
+        self.assertEqual(minor(A, 1, 0), 25)
+        self.assertEqual(cofactor(A, 1, 0), -25)
+
+    def test_calculate_determinant_of_3x3_matrix(self):
+        A = Matrix([[1, 2, 6],
+                    [-5, 8, -4],
+                    [2, 6, 4]])
+
+        self.assertEqual(cofactor(A, 0, 0), 56)
+        self.assertEqual(cofactor(A, 0, 1), 12)
+        self.assertEqual(cofactor(A, 0, 2), -46)
+        self.assertEqual(determinant(A), -196)
+
+    def test_calculate_determinant_of_4x4_matrix(self):
+        A = Matrix([[-2, -8, 3, 5],
+                    [-3, 1, 7, 3],
+                    [1, 2, -9, 6],
+                    [-6, 7, 7, -9]])
+
+        self.assertEqual(cofactor(A, 0, 0), 690)
+        self.assertEqual(cofactor(A, 0, 1), 447)
+        self.assertEqual(cofactor(A, 0, 2), 210)
+        self.assertEqual(cofactor(A, 0, 3), 51)
+        self.assertEqual(determinant(A), -4071)
+
+    def test_invertible_matrix_for_invertibility(self):
+        A = Matrix([[6, 4, 4, 4],
+                    [5, 5, 7, 6],
+                    [4, 0, 8, 2],
+                    [-7, 1, -1, 1]])
 
 if __name__ == '__main__':
     unittest.main()
