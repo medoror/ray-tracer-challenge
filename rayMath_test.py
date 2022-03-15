@@ -4,7 +4,7 @@ import tempfile
 from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
-    minor, cofactor
+    minor, cofactor, inverse
 from math import sqrt
 
 
@@ -405,8 +405,72 @@ class TestRayMath(unittest.TestCase):
     def test_invertible_matrix_for_invertibility(self):
         A = Matrix([[6, 4, 4, 4],
                     [5, 5, 7, 6],
-                    [4, 0, 8, 2],
-                    [-7, 1, -1, 1]])
+                    [4, -9, 3, -7],
+                    [9, 1, 7, -6]])
+
+        self.assertEqual(determinant(A), -2120)
+        self.assertEqual(A.invertible(), True)
+
+    def test_noninvertible_matrix_for_invertibility(self):
+        A = Matrix([[-4, 2, -2, -3],
+                    [9, 6, 2, 6],
+                    [0, -5, 1, -5],
+                    [0, 0, 0, 0]])
+
+        self.assertEqual(determinant(A), 0)
+        self.assertEqual(A.invertible(), False)
+
+    def test_calc_inverse_of_matrix(self):
+        A = Matrix([[-5, 2, 6, -8],
+                    [1, -5, 1, 8],
+                    [7, 7, -6, -7],
+                    [1, -3, 7, 4]])
+
+        B = inverse(A)
+        self.assertEqual(B, Matrix([[0.21805, 0.45113, 0.24060, -0.04511],
+                                    [-0.80827, -1.45677, -0.44361, 0.52068],
+                                    [-0.07895, -0.22368, -0.05263, 0.19737],
+                                    [-0.52256, -0.81391, -0.30075, 0.30639]]))
+        self.assertEqual(determinant(A), 532)
+        self.assertEqual(cofactor(A, 2, 3), -160)
+        self.assertEqual(B[3, 2], -160 / 532, 5)
+        self.assertEqual(cofactor(A, 3, 2), 105)
+        self.assertEqual(B[2, 3], 105 / 532, 5)
+
+        A = Matrix([[8, -5, 9, 2],
+                    [7, 5, 6, 1],
+                    [-6, 0, 9, 6],
+                    [-3, 0, -9, -4]])
+
+        self.assertEqual(inverse(A), Matrix([[-0.15385, -0.15385, -0.28205, -0.53846],
+                                             [-0.07692, 0.12308, 0.02564, 0.03077],
+                                             [0.35897, 0.35897, 0.43590, 0.92308],
+                                             [-0.69231, -0.69231, -0.76923, -1.92308]]))
+
+        A = Matrix([[9, 3, 0, 9],
+                    [-5, -2, -6, -3],
+                    [-4, 9, 6, 4],
+                    [-7, 6, 6, 2]])
+
+        self.assertEqual(inverse(A), Matrix([[-0.04074, -0.07778, 0.14444, -0.22222],
+                                             [-0.07778, 0.03333, 0.36667, -0.33333],
+                                             [-0.02901, -0.14630, -0.10926, 0.12963],
+                                             [0.17778, 0.06667, -0.26667, 0.33333]]))
+
+    def test_multiply_product_by_inverse(self):
+        A = Matrix([[3, -9, 7, 3],
+                    [3, -8, 2, -9],
+                    [-4, 4, 4, 1],
+                    [-6, 5, -1, 1]])
+
+        B = Matrix([[8, 2, 2, 2],
+                    [3, -1, 7, 0],
+                    [7, 0, 5, 4],
+                    [6, -2, 0, 5]])
+
+        C = A * B
+        self.assertEqual(C*inverse(B), A)
+
 
 if __name__ == '__main__':
     unittest.main()

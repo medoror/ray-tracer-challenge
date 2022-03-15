@@ -2,7 +2,8 @@ from math import sqrt, fabs, ceil
 
 import copy
 
-EPSILON = 0.0001
+TUPLE_EPSILON = 0.0001
+MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
 
@@ -22,7 +23,15 @@ class Matrix:
 
     def __eq__(self, other):
         if isinstance(other, Matrix):
-            return self.matrix == other.matrix
+            # assumes matricies are the same size!
+            rows = len(self.matrix)
+            columns = len(self.matrix[0])
+
+            for row in range(rows):
+                for col in range(columns):
+                    if not Matrix.equals(self.matrix[row][col], other.matrix[row][col]):
+                        return False
+            return True
         return False
 
     def __mul__(self, other):
@@ -40,6 +49,13 @@ class Matrix:
                          new_matrix[2, 0],
                          new_matrix[3, 0])
 
+    def invertible(self):
+        return determinant(self) != 0
+
+    @staticmethod
+    def equals(a, b):
+        return fabs(a - b) < MATRIX_EPSILON
+
     @staticmethod
     def matrix_multiply(m1, m2):
         subRow = []
@@ -54,6 +70,10 @@ class Matrix:
             subRow = []
         return Matrix(returnMatrix)
 
+    # Will i really need to convert float matrix to an int matrix?
+    # @staticmethod
+    # def float_matrix_to_int(matrix):
+    #     return Matrix([[float(y) for y in x] for x in matrix.matrix])
 
 class Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
@@ -78,7 +98,7 @@ class Tuple:
     # can I create my own floating point and override equal?
     @staticmethod
     def equals(a, b):
-        return fabs(a - b) < EPSILON
+        return fabs(a - b) < TUPLE_EPSILON
 
     def __add__(self, other):
         x = self.x + other.x
@@ -184,15 +204,6 @@ class Color:
         self.green = self.tuple.y
         self.blue = self.tuple.z
 
-    # def red(self):
-    #     return self.tuple.x
-    #
-    # def green(self):
-    #     return self.tuple.y
-    #
-    # def blue(self):
-    #     return self.tuple.z
-
     def __eq__(self, other):
         if isinstance(other, Color):
             return self.tuple == other.tuple
@@ -233,7 +244,7 @@ class Canvas:
 
 
 def write_pixel(canvas, x, y, color):
-    print(x, y)
+    # print(x, y)
     canvas.pixels[y][x] = color  # python y address major
 
 
@@ -352,3 +363,42 @@ def minor(matrix, row, column):
 def cofactor(matrix, row, column):
     m = minor(matrix, row, column)
     return m * -1 if (row + column) % 2 != 0 else m
+
+
+def generate_zero_matrix(square_size):
+    if square_size == 2:
+        return Matrix([[0, 0],
+                       [0, 0],
+                       [0, 0],
+                       [0, 0]])
+    elif square_size == 3:
+        return Matrix([[0, 0, 0],
+                       [0, 0, 0],
+                       [0, 0, 0],
+                       [0, 0, 0]])
+    elif square_size == 4:
+        return Matrix([[0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0]])
+    else:
+        raise ValueError("Unsupported matrix size")
+
+
+def inverse(matrix):
+    if not matrix.invertible():
+        raise ValueError("Matrix is not invertible")
+
+    rows = len(matrix)
+    columns = len(matrix[0])
+    determinantValue = determinant(matrix)
+    return_matrix = generate_zero_matrix(rows)
+
+    for row in range(rows):
+        for col in range(columns):
+            c = cofactor(matrix, row, col)
+            # the book used floating point nums to 5 decimals.  I dont think we care here
+            # so the rounding should be dropped. Work towards have a better equals method
+            return_matrix[col][row] = c / determinantValue
+
+    return return_matrix
