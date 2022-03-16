@@ -1,10 +1,12 @@
+import math
 import unittest
 import tempfile
 
 from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
-    minor, cofactor, inverse
+    minor, cofactor, inverse, translation, scaling, rotation_x, \
+    rotation_y, rotation_z, shearing
 from math import sqrt
 
 
@@ -469,7 +471,128 @@ class TestRayMath(unittest.TestCase):
                     [6, -2, 0, 5]])
 
         C = A * B
-        self.assertEqual(C*inverse(B), A)
+        self.assertEqual(C * inverse(B), A)
+
+    def test_multiply_by_translation_matrix(self):
+        transform = translation(5, -3, 2)
+        p = Point(-3, 4, 5)
+        self.assertEqual(transform * p, Point(2, 1, 7))
+
+    def test_multiply_by_inverse_matrix(self):
+        transform = translation(5, -3, 2)
+        inv = inverse(transform)
+        p = Point(-3, 4, 5)
+        self.assertEqual(inv * p, Point(-8, 7, 3))
+
+    def test_translation_does_not_effect_others(self):
+        transform = translation(5, -3, 2)
+        v = Vector(-3, 4, 5)
+        self.assertEqual(transform * v, v)
+
+    def test_scaling_matrix_applied_to_point(self):
+        transform = scaling(2, 3, 4)
+        p = Point(-4, 6, 8)
+        self.assertEqual(transform * p, Point(-8, 18, 32))
+
+    def test_scaling_matrix_applied_to_vector(self):
+        transform = scaling(2, 3, 4)
+        v = Vector(-4, 6, 8)
+        self.assertEqual(transform * v, Vector(-8, 18, 32))
+
+    def test_multiply_by_the_inverse_of_scaling_matrix(self):
+        transform = scaling(2, 3, 4)
+        inv = inverse(transform)
+        v = Vector(-4, 6, 8)
+        self.assertEqual(inv * v, Vector(-2, 2, 2))
+
+    def test_reflection_is_scaling_by_negative_value(self):
+        transform = scaling(-1, 1, 1)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(-2, 3, 4))
+
+    def test_rotating_around_a_point_around_x(self):
+        p = Point(0, 1, 0)
+        half_quarter = rotation_x(math.pi / 4)
+        full_quarter = rotation_x(math.pi / 2)
+        self.assertEqual(half_quarter * p, Point(0, math.sqrt(2) / 2, math.sqrt(2) / 2))
+        self.assertEqual(full_quarter * p, Point(0, 0, 1))
+
+    def test_inverse_x_rotation_rotates_opposite_direction(self):
+        p = Point(0, 1, 0)
+        half_quarter = rotation_x(math.pi / 4)
+        inv = inverse(half_quarter)
+        self.assertEqual(inv * p, Point(0, math.sqrt(2) / 2, -math.sqrt(2) / 2))
+
+    def test_rotating_around_a_point_around_y(self):
+        p = Point(0, 0, 1)
+        half_quarter = rotation_y(math.pi / 4)
+        full_quarter = rotation_y(math.pi / 2)
+        self.assertEqual(half_quarter * p, Point(math.sqrt(2) / 2, 0, math.sqrt(2) / 2))
+        self.assertEqual(full_quarter * p, Point(1, 0, 0))
+
+    def test_rotating_around_a_point_around_z(self):
+        p = Point(0, 1, 0)
+        half_quarter = rotation_z(math.pi / 4)
+        full_quarter = rotation_z(math.pi / 2)
+        self.assertEqual(half_quarter * p, Point(-math.sqrt(2) / 2, math.sqrt(2) / 2, 0))
+        self.assertEqual(full_quarter * p, Point(-1, 0, 0))
+
+    def test_shearing_moves_x_in_proportion_to_y(self):
+        transform = shearing(1, 0, 0, 0, 0, 0)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(5, 3, 4))
+
+    def test_shearing_moves_x_in_proportion_to_z(self):
+        transform = shearing(0, 1, 0, 0, 0, 0)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(6, 3, 4))
+
+    def test_shearing_moves_y_in_proportion_to_x(self):
+        transform = shearing(0, 0, 1, 0, 0, 0)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(2, 5, 4))
+
+    def test_shearing_moves_y_in_proportion_to_z(self):
+        transform = shearing(0, 0, 0, 1, 0, 0)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(2, 7, 4))
+
+    def test_shearing_moves_z_in_proportion_to_x(self):
+        transform = shearing(0, 0, 0, 0, 1, 0)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(2, 3, 6))
+
+    def test_shearing_moves_z_in_proportion_to_y(self):
+        transform = shearing(0, 0, 0, 0, 0, 1)
+        p = Point(2, 3, 4)
+        self.assertEqual(transform * p, Point(2, 3, 7))
+
+    def test_individual_transformations_are_applied_in_sequence(self):
+        p = Point(1, 0, 1)
+        A = rotation_x(math.pi / 2)
+        B = scaling(5, 5, 5)
+        C = translation(10, 5, 7)
+
+        # apply rotation first
+        p2 = A * p
+        self.assertEqual(p2, Point(1, -1, 0))
+
+        # then apply scaling
+        p3 = B * p2
+        self.assertEqual(p3, Point(5, -5, 0))
+
+        # then apply transformation
+        p4 = C * p3
+        self.assertEqual(p4, Point(15, 0, 7))
+
+    def test_chained_transformation_must_be_applied_in_reverse_order(self):
+        p = Point(1, 0, 1)
+        A = rotation_x(math.pi / 2)
+        B = scaling(5, 5, 5)
+        C = translation(10, 5, 7)
+
+        T = C * B * A
+        self.assertEqual(T * p, Point(15, 0, 7))
 
 
 if __name__ == '__main__':

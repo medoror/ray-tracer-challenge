@@ -1,3 +1,4 @@
+import math
 from math import sqrt, fabs, ceil
 
 import copy
@@ -49,6 +50,26 @@ class Matrix:
                          new_matrix[2, 0],
                          new_matrix[3, 0])
 
+        if isinstance(other, Point):
+            convert_to_matrix = Matrix([[other.tuple.x],
+                                        [other.tuple.y],
+                                        [other.tuple.z],
+                                        [other.tuple.w]])
+            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
+            return Point(new_matrix[0, 0],
+                         new_matrix[1, 0],
+                         new_matrix[2, 0])
+
+        if isinstance(other, Vector):
+            convert_to_matrix = Matrix([[other.tuple.x],
+                                        [other.tuple.y],
+                                        [other.tuple.z],
+                                        [other.tuple.w]])
+            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
+            return Vector(new_matrix[0, 0],
+                          new_matrix[1, 0],
+                          new_matrix[2, 0])
+
     def invertible(self):
         return determinant(self) != 0
 
@@ -74,6 +95,7 @@ class Matrix:
     # @staticmethod
     # def float_matrix_to_int(matrix):
     #     return Matrix([[float(y) for y in x] for x in matrix.matrix])
+
 
 class Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
@@ -402,3 +424,45 @@ def inverse(matrix):
             return_matrix[col][row] = c / determinantValue
 
     return return_matrix
+
+
+def translation(x, y, z):
+    return Matrix([[1, 0, 0, x],
+                   [0, 1, 0, y],
+                   [0, 0, 1, z],
+                   [0, 0, 0, 1]])
+
+
+def scaling(x, y, z):
+    return Matrix([[x, 0, 0, 0],
+                   [0, y, 0, 0],
+                   [0, 0, z, 0],
+                   [0, 0, 0, 1]])
+
+
+def rotation_x(radians):
+    return Matrix([[1, 0, 0, 0],
+                   [0, math.cos(radians), -math.sin(radians), 0],
+                   [0, math.sin(radians), math.cos(radians), 0],
+                   [0, 0, 0, 1]])
+
+
+def rotation_y(radians):
+    return Matrix([[math.cos(radians), 0, math.sin(radians), 0],
+                   [0, 1, 0, 0],
+                   [-math.sin(radians), 0, math.cos(radians), 0],
+                   [0, 0, 0, 1]])
+
+
+def rotation_z(radians):
+    return Matrix([[math.cos(radians), -math.sin(radians), 0, 0],
+                   [math.sin(radians), math.cos(radians), 0, 0],
+                   [0, 0, 1, 0],
+                   [0, 0, 0, 1]])
+
+
+def shearing(xy, xz, yx, yz, zx, zy):
+    return Matrix([[1, xy, xz, 0],
+                   [yx, 1, yz, 0],
+                   [zx, zy, 1, 0],
+                   [0, 0, 0, 1]])
