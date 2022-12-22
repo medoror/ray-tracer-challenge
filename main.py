@@ -1,8 +1,9 @@
-from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, Color, write_pixel
+import math
+from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, Color, write_pixel, translation, rotation_x, rotation_y, rotation_z
 
-
+# Run: python3 main.py 
 class Projectile:
-    def __init__(self, pos=Point(), vel=Vector()):
+    def __init__(self, pos=Point(), vel=Vector()): 
         self.position = pos
         self.velocity = vel
 
@@ -34,7 +35,6 @@ def basic_projectile():
 def convert_to_pixel_space(raw_coord):
     return int(raw_coord)
 
-
 def outside_of_canvas(canvas, pos_x, pos_y):
     if pos_x < 0 or pos_x > canvas.width:
         return True
@@ -64,7 +64,24 @@ def ppm_projectile():
 
     canvas_to_ppm(c)
 
+def clock():
+    # how can i orient my points to start in the middle like Point(0, 1, 0) ?
+    c = Canvas(900, 550)
+    middle_of_canvas_point = Point(int(c.width / 2), int(c.height / 2), 0)
+    transform = translation(0, -200, 0)
+    twelve_point = transform * middle_of_canvas_point
+    write_pixel(c, convert_to_pixel_space(twelve_point.tuple.x), convert_to_pixel_space(twelve_point.tuple.y), Color(0,1,0))
+
+    r = rotation_z(3 * math.pi/6)
+
+    three_point = r * twelve_point
+
+    write_pixel(c, convert_to_pixel_space(three_point.tuple.x), convert_to_pixel_space(three_point.tuple.y), Color(0,1,0))
+    
+    canvas_to_ppm(c)
+
 
 if __name__ == '__main__':
     # basic_projectile()
-    ppm_projectile()
+    # ppm_projectile()
+    clock()

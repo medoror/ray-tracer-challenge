@@ -6,9 +6,10 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
     minor, cofactor, inverse, translation, scaling, rotation_x, \
-    rotation_y, rotation_z, shearing
+    rotation_y, rotation_z, shearing, TransformationBuilder
 from math import sqrt
 
+# Run: python -m unittest rayMath_test.py
 
 class TestRayMath(unittest.TestCase):
     def test_tuple_is_a_point(self):
@@ -593,6 +594,12 @@ class TestRayMath(unittest.TestCase):
 
         T = C * B * A
         self.assertEqual(T * p, Point(15, 0, 7))
+
+    def test_chained_transformation_must_be_applied_in_reverse_order_using_builder(self):
+        p = Point(1, 0, 1)
+        T = TransformationBuilder().rotate_x(math.pi / 2).scale(5,5,5).translate(10, 5, 7).build()
+        
+        self.assertEqual(T*p, Point(15, 0, 7))
 
 
 if __name__ == '__main__':

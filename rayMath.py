@@ -264,7 +264,7 @@ class Canvas:
         self.pixels = [[fill for x in range(width)] for y in range(height)]
         self.max_color_value = max_color_value
 
-
+# TODO: write a variant of this that takes a point
 def write_pixel(canvas, x, y, color):
     # print(x, y)
     canvas.pixels[y][x] = color  # python y address major
@@ -425,6 +425,39 @@ def inverse(matrix):
 
     return return_matrix
 
+class TransformationBuilder:
+    def __init__(self):
+        self.current_matrix = None
+        self.operations = []
+ 
+    def identity(self):
+        self.current_matrix = Matrix([[1, 0, 0, 0],
+                                       [0, 1, 0, 0],
+                                       [0, 0, 1, 0],
+                                       [0, 0, 0, 1]])
+        return self
+
+    def rotate_x(self, radius):
+        self.operations.append(rotation_x(radius))
+        return self
+    
+    def scale(self,x,y,z):
+        self.operations.append(scaling(x,y,z))
+        return self
+
+    def translate(self,x,y,z):
+        self.operations.append(translation(x,y,z))
+        return self
+
+    def build(self):
+        if not self.operations:
+            raise Exception("Gotta add things before you build!!")
+        else:
+            current = self.operations.pop()
+            while self.operations:
+                next = self.operations.pop()
+                current = current * next
+            return current
 
 def translation(x, y, z):
     return Matrix([[1, 0, 0, x],
