@@ -427,22 +427,34 @@ def inverse(matrix):
 
 class TransformationBuilder:
     def __init__(self):
-        self.current_matrix = None
         self.operations = []
  
+    # is this correct?
     def identity(self):
-        self.current_matrix = Matrix([[1, 0, 0, 0],
+        self.operations.append(Matrix([[1, 0, 0, 0],
                                        [0, 1, 0, 0],
                                        [0, 0, 1, 0],
-                                       [0, 0, 0, 1]])
+                                       [0, 0, 0, 1]]) )
         return self
 
     def rotate_x(self, radius):
         self.operations.append(rotation_x(radius))
         return self
-    
+
+    def rotate_y(self, radius):
+        self.operations.append(rotation_y(radius))
+        return self
+     
+    def rotate_z(self, radius):
+        self.operations.append(rotation_z(radius))
+        return self
+
     def scale(self,x,y,z):
         self.operations.append(scaling(x,y,z))
+        return self
+
+    def shear(self, xy, xz, yx, yz, zx, zy):
+        self.operations.append(shearing(xy, xz, yx, yz, zx, zy))
         return self
 
     def translate(self,x,y,z):

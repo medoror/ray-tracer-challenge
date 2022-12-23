@@ -601,6 +601,32 @@ class TestRayMath(unittest.TestCase):
         
         self.assertEqual(T*p, Point(15, 0, 7))
 
+    def test_clock_playground(self):
+        # twelve o clock (0,0,1)
+        # r = rotation_y((math.pi / 6))
+        # twelve = Point(0,0,1)
+        # three = r * twelve
+        # self.assertEqual(three, Point(1,0,0))
+
+        # three o clock (1,0,0)
+        r = rotation_y(3 * (math.pi / 6))
+        twelve = Point(0,0,1)
+        three = r * twelve
+        self.assertEqual(three, Point(1,0,0))
+
+        # six o clock (0,0,-1)
+        r = rotation_y(6 * (math.pi / 6))
+        twelve = Point(0,0,1)
+        six = r * twelve
+        self.assertEqual(six, Point(0,0,-1))
+
+        # nine o clock (-1,0,0)
+        r = rotation_y(9 * (math.pi / 6))
+        twelve = Point(0,0,1)
+        nine = r * twelve
+        self.assertEqual(nine, Point(-1,0,0))
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -66,17 +66,29 @@ def ppm_projectile():
 
 def clock():
     # how can i orient my points to start in the middle like Point(0, 1, 0) ?
-    c = Canvas(900, 550)
-    middle_of_canvas_point = Point(int(c.width / 2), int(c.height / 2), 0)
-    transform = translation(0, -200, 0)
-    twelve_point = transform * middle_of_canvas_point
-    write_pixel(c, convert_to_pixel_space(twelve_point.tuple.x), convert_to_pixel_space(twelve_point.tuple.y), Color(0,1,0))
+    c = Canvas(200, 200)
+    # middle_of_canvas_point = Point(int(c.width / 2), int(c.height / 2), 0) # i think the z should not be zero
+    middle_of_canvas_matrix = translation(100, 0, 100)
+    clock_radius = c.width * 0.375
 
-    r = rotation_z(3 * math.pi/6)
+    intervals = [3,6,9]
 
-    three_point = r * twelve_point
+    raw_points = []
+    # add twelve
+    twelve_point_with_radius = Point(0 * clock_radius, 0, 1*clock_radius)
+    # translate_from_center = translation(middle_of_canvas_point.tuple.x, middle_of_canvas_point.tuple.y, middle_of_canvas_point.tuple.z)
+    raw_points.append(middle_of_canvas_matrix*twelve_point_with_radius)
 
-    write_pixel(c, convert_to_pixel_space(three_point.tuple.x), convert_to_pixel_space(three_point.tuple.y), Color(0,1,0))
+    for interval in intervals:
+        r = rotation_y(interval * (math.pi / 6))
+        twelve = Point(0,0,1)
+        step = r * twelve
+        step.tuple.x * clock_radius
+        step.tuple.z * clock_radius
+        raw_points.append(middle_of_canvas_matrix*step)
+
+    for points in raw_points:
+        write_pixel(c, convert_to_pixel_space(points.tuple.x), convert_to_pixel_space(points.tuple.z), Color(0,1,0))
     
     canvas_to_ppm(c)
 
