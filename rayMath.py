@@ -1,11 +1,18 @@
 import math
 from math import sqrt, fabs, ceil
 
+import sys
+
 import copy
 
 TUPLE_EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
+
+class Intersection:
+    def __init__(self, distance_t, s_object):
+        self.t = distance_t
+        self.s_object = s_object
 
 class Sphere:
     def __init__(self):
@@ -523,14 +530,14 @@ def shearing(xy, xz, yx, yz, zx, zy):
 def position(ray, t):
     return ray.origin + ray.direction * t
 
-def intersects(sphere, ray):
+def intersect(sphere, ray):
     sphere_to_ray = ray.origin - Point(0,0,0) # unit circle for now
     a = dot(ray.direction, ray.direction)
     b = 2 * dot(ray.direction, sphere_to_ray)
     c = dot(sphere_to_ray, sphere_to_ray) - 1
 
     discriminant = b*b - 4 * a * c
-    print("discriminant: {0}".format(discriminant))
+    # print("discriminant: {0}".format(discriminant))
 
     if discriminant < 0:
         return []
@@ -538,5 +545,18 @@ def intersects(sphere, ray):
     t1 = (-b - math.sqrt(discriminant)) / (2 * a)
     t2 = (-b + math.sqrt(discriminant)) / (2 * a)
 
-    return [t1, t2]
+    return [Intersection(t1, sphere), Intersection(t2, sphere)]
+
+
+def intersections(*intersections):
+    return intersections
+
+def hit(intersections):
+    current_smallest = Intersection(sys.maxsize, None)
+    for intersection in intersections:
+        if intersection.t < 0:
+            continue
+        if current_smallest.t >= intersection.t:
+            current_smallest = intersection
+    return None if current_smallest.t == sys.maxsize else current_smallest
 
