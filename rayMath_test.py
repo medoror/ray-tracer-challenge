@@ -6,7 +6,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     magnitude, cross, dot, normalize, Canvas, write_pixel, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
     minor, cofactor, inverse, translation, scaling, rotation_x, \
-    rotation_y, rotation_z, shearing, TransformationBuilder
+    rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
+    position, Sphere, intersects
 from math import sqrt
 
 # Run: python -m unittest rayMath_test.py
@@ -626,6 +627,58 @@ class TestRayMath(unittest.TestCase):
         nine = r * twelve
         self.assertEqual(nine, Point(-1,0,0))
 
+
+    def test_creating_and_querying_a_ray(self):
+        origin = Point(1,2,3)
+        direction = Vector(4,5,6)
+        r = Ray(origin, direction)
+        self.assertEqual(r.origin, origin)
+        self.assertEqual(r.direction, direction)
+
+    def test_computing_point_from_distance(self):
+        r = Ray(Point(2,3,4), Vector(1,0,0))
+        self.assertEqual(position(r,0), Point(2,3,4))
+        self.assertEqual(position(r,1), Point(3,3,4))
+        self.assertEqual(position(r,-1), Point(1,3,4))
+        self.assertEqual(position(r,2.5), Point(4.5,3,4))
+
+    def test_ray_intersects_a_sphere_at_two_points(self):
+        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        s = Sphere()
+        xs = intersects(s,r)
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(xs[0], 4.0)
+        self.assertEqual(xs[1], 6.0)
+
+    def test_ray_intersects_a_sphere_at_a_tangent(self):
+        r = Ray(Point(0,1,-5), Vector(0,0,1))
+        s = Sphere()
+        xs = intersects(s,r)
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(xs[0], 5.0)
+        self.assertEqual(xs[1], 5.0)
+
+    def test_ray_misses_a_sphere(self):
+        r = Ray(Point(0,2,-5), Vector(0,0,1))
+        s = Sphere()
+        xs = intersects(s,r)
+        self.assertEqual(len(xs), 0)
+
+    def test_ray_originates_inside_a_sphere(self):
+        r = Ray(Point(0,0,0), Vector(0,0,1))
+        s = Sphere()
+        xs = intersects(s,r)
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(xs[0], -1.0)
+        self.assertEqual(xs[1], 1.0)
+
+    def test_sphere_is_behind_a_ray(self):
+        r = Ray(Point(0,0,5), Vector(0,0,1))
+        s = Sphere()
+        xs = intersects(s,r)
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(xs[0], -6.0)
+        self.assertEqual(xs[1], -4.0)
 
 
 if __name__ == '__main__':

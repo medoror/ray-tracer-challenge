@@ -7,6 +7,14 @@ TUPLE_EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
+class Sphere:
+    def __init__(self):
+        pass
+
+class Ray:
+    def __init__(self, origin, direction):
+        self.origin = origin
+        self.direction = direction
 
 class Matrix:
     def __init__(self, matrix):
@@ -511,3 +519,24 @@ def shearing(xy, xz, yx, yz, zx, zy):
                    [yx, 1, yz, 0],
                    [zx, zy, 1, 0],
                    [0, 0, 0, 1]])
+
+def position(ray, t):
+    return ray.origin + ray.direction * t
+
+def intersects(sphere, ray):
+    sphere_to_ray = ray.origin - Point(0,0,0) # unit circle for now
+    a = dot(ray.direction, ray.direction)
+    b = 2 * dot(ray.direction, sphere_to_ray)
+    c = dot(sphere_to_ray, sphere_to_ray) - 1
+
+    discriminant = b*b - 4 * a * c
+    print("discriminant: {0}".format(discriminant))
+
+    if discriminant < 0:
+        return []
+
+    t1 = (-b - math.sqrt(discriminant)) / (2 * a)
+    t2 = (-b + math.sqrt(discriminant)) / (2 * a)
+
+    return [t1, t2]
+
