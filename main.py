@@ -1,5 +1,6 @@
 import math
-from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, Color, write_pixel, translation, rotation_x, rotation_y, rotation_z
+from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
+Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder
 
 # Run: python3 main.py 
 class Projectile:
@@ -65,31 +66,27 @@ def ppm_projectile():
     canvas_to_ppm(c)
 
 def clock():
-    # how can i orient my points to start in the middle like Point(0, 1, 0) ?
-    c = Canvas(200, 200)
-    # middle_of_canvas_point = Point(int(c.width / 2), int(c.height / 2), 0) # i think the z should not be zero
-    middle_of_canvas_matrix = translation(100, 0, 100)
-    clock_radius = c.width * 0.375
+    # orientation: from book (looking down the -y axis)
+    # 12 hour mark- Point(0,0,1)
+    # 3 hour mark - Point(1,0,0)
+    # 6 hour mark - Point(0, 0, -1)
+    # 9 hour mark - Point(-1, 0, 0)
 
-    intervals = [3,6,9]
+    square_dimension = 900
+    c = Canvas(square_dimension, square_dimension)
+    point_color = Color(0,1,0) # green
+    # Move each point from the middle. We scale here to spread the points a part from one another
+    middle_of_canvas_matrix = TransformationBuilder().scale(80, 0, 80).translate(square_dimension / 2, 0, square_dimension / 2).build()
 
-    raw_points = []
-    # add twelve
-    twelve_point_with_radius = Point(0 * clock_radius, 0, 1*clock_radius)
-    # translate_from_center = translation(middle_of_canvas_point.tuple.x, middle_of_canvas_point.tuple.y, middle_of_canvas_point.tuple.z)
-    raw_points.append(middle_of_canvas_matrix*twelve_point_with_radius)
+    twelve = Point(0,0,1)
 
-    for interval in intervals:
+    for interval in range(0,12):
         r = rotation_y(interval * (math.pi / 6))
-        twelve = Point(0,0,1)
-        step = r * twelve
-        step.tuple.x * clock_radius
-        step.tuple.z * clock_radius
-        raw_points.append(middle_of_canvas_matrix*step)
+        hour_mark = r * twelve
+        translated_point = middle_of_canvas_matrix * hour_mark
+        print(translated_point)
+        write_pixel(c, convert_to_pixel_space(translated_point.tuple.x), convert_to_pixel_space(translated_point.tuple.z), point_color)
 
-    for points in raw_points:
-        write_pixel(c, convert_to_pixel_space(points.tuple.x), convert_to_pixel_space(points.tuple.z), Color(0,1,0))
-    
     canvas_to_ppm(c)
 
 
