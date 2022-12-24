@@ -16,7 +16,10 @@ class Intersection:
 
 class Sphere:
     def __init__(self):
-        pass
+        self.transform = Matrix([[1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 0, 1]])
 
 class Ray:
     def __init__(self, origin, direction):
@@ -531,9 +534,10 @@ def position(ray, t):
     return ray.origin + ray.direction * t
 
 def intersect(sphere, ray):
-    sphere_to_ray = ray.origin - Point(0,0,0) # unit circle for now
-    a = dot(ray.direction, ray.direction)
-    b = 2 * dot(ray.direction, sphere_to_ray)
+    transformed_ray = transform(ray, inverse(sphere.transform))
+    sphere_to_ray = transformed_ray.origin - Point(0,0,0) # unit circle for now
+    a = dot(transformed_ray.direction, transformed_ray.direction)
+    b = 2 * dot(transformed_ray.direction, sphere_to_ray)
     c = dot(sphere_to_ray, sphere_to_ray) - 1
 
     discriminant = b*b - 4 * a * c
@@ -560,3 +564,8 @@ def hit(intersections):
             current_smallest = intersection
     return None if current_smallest.t == sys.maxsize else current_smallest
 
+def transform(ray, matrix):
+    return Ray(matrix * ray.origin,  matrix * ray.direction)
+
+def set_transform(sphere, translation):
+    sphere.transform = translation

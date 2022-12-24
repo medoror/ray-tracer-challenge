@@ -7,7 +7,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
     minor, cofactor, inverse, translation, scaling, rotation_x, \
     rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
-    position, Sphere, intersect, Intersection, intersections, hit
+    position, Sphere, intersect, Intersection, intersections, hit, \
+    transform, set_transform
 from math import sqrt
 
 # Run: python -m unittest rayMath_test.py
@@ -745,6 +746,50 @@ class TestRayMath(unittest.TestCase):
 
         i = hit(xs)
         self.assertEqual(i, i4)
+
+    def test_translating_a_ray(self):
+        r = Ray(Point(1,2,3), Vector(0,1,0))
+        m = translation(3,4,5)
+        r2 = transform(r,m)
+        self.assertEqual(r2.origin, Point(4,6,8))
+        self.assertEqual(r2.direction, Vector(0,1,0))
+
+    def test_scaling_a_ray(self):
+        r = Ray(Point(1,2,3), Vector(0,1,0))
+        m = scaling(2,3,4)
+        r2 = transform(r,m)
+        self.assertEqual(r2.origin, Point(2,6,12))
+        self.assertEqual(r2.direction, Vector(0,3,0))
+
+    def test_sphere_default_transformation(self):
+        s = Sphere()
+        identity_matrix = Matrix([[1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 0, 1]])
+        self.assertEqual(s.transform, identity_matrix)
+
+    def test_change_sphere_transformation(self):
+        s = Sphere()
+        t = translation(2,3,4)
+        set_transform(s,t)
+        self.assertEqual(s.transform, t)
+
+    def test_intersecting_a_scaled_sphere_with_a_ray(self):
+        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        s = Sphere()
+        set_transform(s, scaling(2,2,2))
+        xs = intersect(s,r)
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(xs[0].t, 3)
+        self.assertEqual(xs[1].t, 7)
+
+    def test_intersecting_a_translated_sphere_with_a_ray(self):
+        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        s = Sphere()
+        set_transform(s, translation(5,0,0))
+        xs = intersect(s,r)
+        self.assertEqual(len(xs), 0)
 
 if __name__ == '__main__':
     unittest.main()
