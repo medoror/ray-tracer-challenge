@@ -1,6 +1,7 @@
 import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
-Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder
+Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
+Sphere, Ray, intersect, hit, scaling, rotation_z, shearing
 
 # Run: python3 main.py 
 class Projectile:
@@ -89,8 +90,51 @@ def clock():
 
     canvas_to_ppm(c)
 
+def ray_cast_sphere():
+    canvas_pixels = 100
+    canvas = Canvas(canvas_pixels, canvas_pixels)
+    color = Color(1,0,0)
+    shape = Sphere()
+    # shrink it along the y axis
+    # shape.transform = scaling(1, 0.5, 1)
+
+    # shrink it along the x axis
+    # shape.transform = scaling(0.5, 1, 1)
+
+    # shrink it, and rotate it!
+    # shape.transform = rotation_z(math.pi / 4) * scaling(0.5,1,1)
+
+    #shrink it, and skew it!
+    shape.transform = shearing(1, 0, 0, 0, 0, 0) * scaling(0.5, 1, 1)
+
+    ray_origin = Point(0,0,-5)
+    wall_z = 10
+    wall_size = 7.0
+
+    pixel_size = wall_size / canvas_pixels
+
+    half = wall_size / 2
+
+    # for each row of pixels in the canvas
+    for y in range(canvas_pixels-1):
+        world_y = half - pixel_size * y
+
+        # for each pixel in the row
+        for x in range(canvas_pixels-1):
+            # compute the world x coordinate
+            world_x = -half + pixel_size * x
+            # describe the point on the wall that the ray will target
+            position = Point(world_x, world_y, wall_z)
+            r = Ray(ray_origin, normalize(position - ray_origin))
+            xs = intersect(shape, r)
+
+            if hit(xs):
+                write_pixel(canvas, x, y, color)
+
+    canvas_to_ppm(canvas)
 
 if __name__ == '__main__':
     # basic_projectile()
     # ppm_projectile()
-    clock()
+    # clock()
+    ray_cast_sphere()
