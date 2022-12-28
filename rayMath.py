@@ -9,6 +9,29 @@ TUPLE_EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
+class Material:
+    def __init__(self):
+        self.color = Color(1,1,1)
+        self.ambient = 0.1
+        self.diffuse = 0.9
+        self.specular = 0.9
+        self.shininess = 200.0
+
+    def __eq__(self, other):
+        if isinstance(other, Material):
+            return self.color == other.color and \
+             self.ambient == other.ambient and \
+             self.diffuse == other.diffuse and \
+             self.specular == other.specular and \
+             self.shininess == other.shininess
+
+        return False
+
+class PointLight:
+    def __init__(self, position, intensity):
+        self.position = position
+        self.intensity = intensity
+
 class Intersection:
     def __init__(self, distance_t, s_object):
         self.t = distance_t
@@ -20,6 +43,8 @@ class Sphere:
                             [0, 1, 0, 0],
                             [0, 0, 1, 0],
                             [0, 0, 0, 1]])
+
+        self.material = Material()
 
 class Ray:
     def __init__(self, origin, direction):
@@ -221,6 +246,10 @@ class Vector:
     def __mul__(self, other):
         t1 = self.tuple * other
         return Vector(t1.x, t1.y, t1.z)
+
+    def __neg__(self):
+        t = Tuple(self.tuple.x,self.tuple.y,self.tuple.z,self.tuple.w)
+        return Vector(-t.x, -t.y, -t.z)
 
     def __eq__(self, other):
         if isinstance(other, Vector):
@@ -530,6 +559,7 @@ def shearing(xy, xz, yx, yz, zx, zy):
                    [zx, zy, 1, 0],
                    [0, 0, 0, 1]])
 
+# todo: change this name maybe position_along_ray?
 def position(ray, t):
     return ray.origin + ray.direction * t
 
@@ -569,3 +599,49 @@ def transform(ray, matrix):
 
 def set_transform(sphere, translation):
     sphere.transform = translation
+
+def normal_at(sphere, world_point):
+    object_point = inverse(sphere.transform) * world_point
+    object_normal = object_point - Point(0,0,0)
+    world_normal = transpose(inverse(sphere.transform)) * object_normal
+    world_normal.tuple.w = 0
+    return normalize(world_normal)
+
+def reflect(in_vector, normal):
+    return in_vector - normal * 2 * dot(in_vector, normal)
+
+def lighting(material, light, point, eyev, normalv):
+    # combine the surface color with the lights color/intensity
+    effective_color = material.color * light.intensity
+    # find the direction to the light source
+    lightv = normalize(light.position - point)
+    # compute the ambient contribution
+    ambient = effective_color * material.ambient
+
+    # light_dot_normal represents the cosine of the angle between the light_vector
+    # and the normal vector.  A negative number means the light is on the other side
+    # of the surface
+    light_dot_normal = dot(lightv, normalv)
+    if light_dot_normal < 0:
+        # can i make this a const
+        diffuse = Color(0,0,0)
+        specular = Color(0,0,0)
+    else:
+        # compute the diffuse contribution
+        diffuse = effective_color * material.diffuse * light_dot_normal
+
+        # reflect_dot_eye represents the cosine of the angle between the reflection vector 
+        # and the eye vector.  A negative number means the light reflects away from the eye
+        reflectv = reflect(-lightv, normalv)
+        reflect_dot_eye = dot(reflectv, eyev)
+
+        if reflect_dot_eye <= 0:
+            specular = Color(0,0,0) # can i make this a const
+        else:
+            # compute the specular contribution
+            factor = math.pow(reflect_dot_eye, material.shininess)
+            specular = light.intensity * material.specular * factor
+    # print(ambient)
+    # print(diffuse)
+    # print(specular)
+    return ambient + diffuse + specular

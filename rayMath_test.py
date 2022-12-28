@@ -8,7 +8,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     minor, cofactor, inverse, translation, scaling, rotation_x, \
     rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
     position, Sphere, intersect, Intersection, intersections, hit, \
-    transform, set_transform
+    transform, set_transform, normal_at, reflect, PointLight, Material, \
+    lighting
 from math import sqrt
 
 # Run: python -m unittest rayMath_test.py
@@ -137,7 +138,7 @@ class TestRayMath(unittest.TestCase):
         c1 = Color(0.9, 0.6, 0.75)
         c2 = Color(0.7, 0.1, 0.25)
 
-        print(c1 - c2)
+        # print(c1 - c2)
         self.assertEqual(c1 - c2, Color(0.2, 0.5, 0.5))
 
     def test_multiplying_color_by_scalar(self):
@@ -203,7 +204,7 @@ class TestRayMath(unittest.TestCase):
 
         with open(outfile_path, 'r') as f:
             contents = f.readlines()
-            print(contents)
+            # print(contents)
             self.assertEqual("255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204", contents[3].strip())
             self.assertEqual("153 255 204 153 255 204 153 255 204 153 255 204 153", contents[4].strip())
             self.assertEqual("255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204", contents[5].strip())
@@ -790,6 +791,130 @@ class TestRayMath(unittest.TestCase):
         set_transform(s, translation(5,0,0))
         xs = intersect(s,r)
         self.assertEqual(len(xs), 0)
+
+    def test_normal_on_a_sphere_at_a_point_on_the_x_axis(self):
+        s = Sphere()
+        n = normal_at(s, Point(1,0,0))
+        self.assertEqual(n, Vector(1,0,0))
+
+    def test_normal_on_a_sphere_at_a_point_on_the_y_axis(self):
+        s = Sphere()
+        n = normal_at(s, Point(0,1,0))
+        self.assertEqual(n, Vector(0,1,0))
+
+    def test_normal_on_a_sphere_at_a_point_on_the_z_axis(self):
+        s = Sphere()
+        n = normal_at(s, Point(0,0,1))
+        self.assertEqual(n, Vector(0,0,1))
+
+    def test_normal_on_a_sphere_at_a_nonaxial_point(self):
+        s = Sphere()
+        n = normal_at(s, Point(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
+        self.assertEqual(n, Vector(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
+
+    def test_normal_is_a_normalized_vector(self):
+        s = Sphere()
+        n = normal_at(s, Point(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
+        self.assertEqual(n, normalize(n))
+
+    def test_compute_normal_on_translated_sphere(self):
+        s = Sphere()
+        set_transform(s, translation(0,1,0))
+        n = normal_at(s, Point(0, 1.70711, -0.70711))
+        self.assertEqual(n, Vector(0, 0.70711, -0.70711))
+
+    def test_compute_normal_on_transformed_sphere(self):
+        s = Sphere()
+        m = scaling(1, 0.5, 1) * rotation_z(math.pi/5)
+        set_transform(s,m)
+        n = normal_at(s, Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
+        self.assertEqual(n, Vector(0, 0.97014, -0.24254))
+
+    def test_reflecting_vector_approaching_45_degrees(self):
+        v = Vector(1, -1, 0)
+        n = Vector(0, 1, 0)
+        r = reflect(v,n)
+        self.assertEqual(r, Vector(1,1,0))
+
+    def test_reflecting_vector_off_slanted_surface(self):
+        v = Vector(0, -1, 0)
+        n = Vector(math.sqrt(2)/2, math.sqrt(2)/2, 0)
+        r = reflect(v,n)
+        self.assertEqual(r, Vector(1,0,0))
+
+    def test_point_light_has_position_and_intensity(self):
+        intensity = Color(1,1,1)
+        position = Point(0,0,0)
+        light = PointLight(position, intensity)
+        self.assertEqual(light.position, position)
+        self.assertEqual(light.intensity, intensity)
+
+    def test_default_material(self):
+        m = Material()
+        self.assertEqual(m.color, Color(1,1,1))
+        self.assertEqual(m.ambient, 0.1)
+        self.assertEqual(m.diffuse, 0.9)
+        self.assertEqual(m.specular, 0.9)
+        self.assertEqual(m.shininess, 200.0)
+
+    def test_sphere_has_default_material(self):
+        s = Sphere()
+        m = s.material
+        self.assertEqual(m, Material())
+
+    def test_sphere_may_be_assigned_a_material(self):
+        s = Sphere()
+        m = Material()
+        m.ambient = 1
+        s.material = m
+        self.assertEqual(s.material, m)
+
+    def test_lighting_with_eye_between_ligth_and_surface(self):
+        m = Material()
+        position = Point(0,0,0)
+        eyev = Vector(0,0,-1)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        result = lighting(m, light, position, eyev, normalv)
+        self.assertEqual(result, Color(1.9, 1.9, 1.9))
+    
+    def test_lighting_with_eye_between_light_and_surface_eye_offset_45_degrees(self):
+        m = Material()
+        position = Point(0,0,0)
+        eyev = Vector(0,math.sqrt(2)/2,-math.sqrt(2)/2)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        result = lighting(m, light, position, eyev, normalv)
+        self.assertEqual(result, Color(1.0, 1.0, 1.0))
+
+    def test_lighting_with_eye_opposite_surface_light_offset_45_degrees(self):
+        m = Material()
+        position = Point(0,0,0)
+        eyev = Vector(0,0,-1)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,10,-10), Color(1,1,1))
+        result = lighting(m, light, position, eyev, normalv)
+        self.assertEqual(result, Color(0.7364, 0.7364, 0.7364))
+
+    def test_lighting_with_eye_in_path_of_the_reflection_vector(self):
+        m = Material()
+        position = Point(0,0,0)
+        eyev = Vector(0,-math.sqrt(2)/2,-math.sqrt(2)/2)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,10,-10), Color(1,1,1))
+        result = lighting(m, light, position, eyev, normalv)
+        self.assertEqual(result, Color(1.6364, 1.6364, 1.6364))
+
+    def test_lighting_with_light_behind_the_surface(self):
+        m = Material()
+        position = Point(0,0,0)
+        eyev = Vector(0,0,-1)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,0,10), Color(1,1,1))
+        result = lighting(m, light, position, eyev, normalv)
+        print(result)
+        self.assertEqual(result, Color(0.1, 0.1, 0.1))
+
 
 if __name__ == '__main__':
     unittest.main()

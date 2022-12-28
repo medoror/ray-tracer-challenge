@@ -1,7 +1,8 @@
 import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
 Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
-Sphere, Ray, intersect, hit, scaling, rotation_z, shearing
+Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
+PointLight, position, normal_at
 
 # Run: python3 main.py 
 class Projectile:
@@ -90,6 +91,49 @@ def clock():
 
     canvas_to_ppm(c)
 
+def ray_cast_sphere_lighting():
+    canvas_pixels = 500
+    canvas = Canvas(canvas_pixels, canvas_pixels)
+    sphere = Sphere()
+    sphere.material = Material()
+    sphere.material.color = Color(1, 0.2, 1)
+    sphere.transform = shearing(1, 0, 0, 0, 0, 0) * scaling(0.5, 1, 1)
+
+    #light source
+    light_position = Point(-10, 10, -10)
+    light_color = Color(1,1,1)
+    light = PointLight(light_position, light_color)
+
+    ray_origin = Point(0,0,-5)
+    wall_z = 10
+    wall_size = 7.0
+
+    pixel_size = wall_size / canvas_pixels
+
+    half = wall_size / 2
+
+    # for each row of pixels in the canvas
+    for y in range(canvas_pixels-1):
+        world_y = half - pixel_size * y
+
+        # for each pixel in the row
+        for x in range(canvas_pixels-1):
+            # compute the world x coordinate
+            world_x = -half + pixel_size * x
+            # describe the point on the wall that the ray will target
+            point_on_wall_position = Point(world_x, world_y, wall_z)
+            r = Ray(ray_origin, normalize(point_on_wall_position - ray_origin))
+            xs = intersect(sphere, r)
+
+            if hit(xs):
+                point = position(r, xs[0].t) # todo: this intersection should be the closest
+                normal = normal_at(xs[0].s_object, point)
+                eye = -r.direction
+                color = lighting(xs[0].s_object.material, light, point, eye, normal)
+                write_pixel(canvas, x, y, color)
+
+    canvas_to_ppm(canvas)
+
 def ray_cast_sphere():
     canvas_pixels = 100
     canvas = Canvas(canvas_pixels, canvas_pixels)
@@ -137,4 +181,5 @@ if __name__ == '__main__':
     # basic_projectile()
     # ppm_projectile()
     # clock()
-    ray_cast_sphere()
+    # ray_cast_sphere()
+    ray_cast_sphere_lighting()
