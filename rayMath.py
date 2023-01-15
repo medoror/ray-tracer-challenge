@@ -9,6 +9,41 @@ TUPLE_EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
+class Camera:
+    def __init__(self, hsize, vsize, field_of_view):
+        self.hsize = hsize
+        self.vsize = vsize
+        self.field_of_view = field_of_view
+        self.transform = Matrix([[1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 0, 1]])
+
+        half_view = math.tan(field_of_view / 2)
+        aspect = hsize / vsize
+
+        if(aspect >= 1):
+            self.half_width = half_view
+            self.half_height = half_view / aspect
+        else:
+            self.half_width = half_view * aspect
+            self.half_height = half_view
+        self.pixel_size = (self.half_width * 2) / hsize
+
+class PrepareComputations:
+    def __init__(self, intersection, ray):
+        self.t = intersection.t
+        self.object = intersection.s_object
+        self.point = position(ray, self.t)
+        self.eyev = -ray.direction
+        self.normalv = normal_at(self.object, self.point)
+        self.inside = False
+
+class World:
+    def __init__(self):
+        self.objects = []
+        self.light = None
+
 class Material:
     def __init__(self):
         self.color = Color(1,1,1)
@@ -35,7 +70,7 @@ class PointLight:
 class Intersection:
     def __init__(self, distance_t, s_object):
         self.t = distance_t
-        self.s_object = s_object
+        self.s_object = s_object # s_object -> x_object??
 
 class Sphere:
     def __init__(self):
@@ -301,7 +336,7 @@ class Color:
         return Color(red, green, blue)
 
     def __str__(self):
-        return "Color: ({0},{1},{2})".format(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
+        return "Color: ({0},{1},{2},{3})".format(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
 
 
 class Canvas:
@@ -641,7 +676,106 @@ def lighting(material, light, point, eyev, normalv):
             # compute the specular contribution
             factor = math.pow(reflect_dot_eye, material.shininess)
             specular = light.intensity * material.specular * factor
-    # print(ambient)
-    # print(diffuse)
-    # print(specular)
     return ambient + diffuse + specular
+
+def default_world():
+    w = World()
+
+    s1 = Sphere()
+    m = Material()
+    m.color = Color(0.8, 1.0, 0.6)
+    m.diffuse = 0.7
+    m.specular = 0.2
+    s1.material = m
+    
+    s2 = Sphere()
+    s2.transform = scaling(0.5, 0.5, 0.5)
+
+    w.objects = [s1,s2]
+    w.light = PointLight(Point(-10,10,-10), Color(1,1,1))
+    return w
+
+def intersect_world(world, ray):
+    # there has got to be cleaner way to do this
+    returned_intersections = []
+    for sphere in world.objects:
+        computed_intersections = intersect(sphere, ray)
+        if len(computed_intersections) == 0:
+            continue
+        returned_intersections.append(computed_intersections[0])
+        returned_intersections.append(computed_intersections[1])
+    returned_intersections.sort(key=lambda i : i.t)
+    return returned_intersections
+
+def prepare_computations(intersection, ray):
+    comps = PrepareComputations(intersection, ray)
+
+    if dot(comps.normalv, comps.eyev) < 0: 
+        comps.inside = True
+        comps.normalv = -comps.normalv
+    else:
+        comps.inside = False
+    return comps
+
+def shade_hit(world, comps):
+    return lighting(comps.object.material, world.light, comps.point, comps.eyev, comps.normalv)
+
+def color_at(world, ray):
+    xs = intersect_world(world, ray)
+
+    possible_intersection = hit(xs)
+    if possible_intersection == None:
+        return Color(0,0,0)
+    else:
+        comps = prepare_computations(possible_intersection, ray)
+        # return shade_hit(world, comps)
+        the_color = shade_hit(world, comps)
+        # print("Computed Color {0}".format(the_color))
+        return the_color
+
+def view_transforfmation(from_vector, to_vector, up_vector):
+    forward = normalize(to_vector - from_vector)
+    upn = normalize(up_vector)
+    left = cross(forward, upn)
+    true_up = cross(left, forward)
+
+    orientation = Matrix([[left.tuple.x, left.tuple.y, left.tuple.z, 0 ],
+                          [ true_up.tuple.x, true_up.tuple.y, true_up.tuple.z, 0 ],
+                          [ -forward.tuple.x , -forward.tuple.y, -forward.tuple.z, 0 ],
+                          [ 0,0,0,1 ]])
+
+    return orientation * translation(-from_vector.tuple.x,-from_vector.tuple.y,-from_vector.tuple.z)
+
+def ray_for_pixel(camera, px, py):
+    # the offset from the edge of the canvas to the pixels center
+    xoffset = (px + 0.5) * camera.pixel_size
+    yoffset = (py + 0.5) * camera.pixel_size
+
+    # the untransformed coordinates of the pixel in the world space.
+    # (remember that the camera looks toward -z, so +x is to the left)
+
+    world_x = camera.half_width - xoffset
+    world_y = camera.half_height - yoffset
+
+    # using the camera matrix, transform the canvas point and the origin, and then
+    # compute the ray's direction vector
+    # (remember that the canvas is at z =-1)
+
+    camera_inverse = inverse(camera.transform)
+    pixel = camera_inverse * Point(world_x, world_y, -1)
+    origin = camera_inverse * Point(0, 0, 0)
+    direction = normalize(pixel - origin)
+
+    return Ray(origin, direction)
+
+def render(camera, world):
+    image = Canvas(camera.hsize, camera.vsize)
+
+    for y in range(camera.vsize - 1):
+        for x in range(camera.hsize - 1):
+            ray = ray_for_pixel(camera, x, y)
+            color = color_at(world, ray)
+            write_pixel(image, x, y, color)
+    
+    return image
+
