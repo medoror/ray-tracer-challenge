@@ -550,7 +550,8 @@ class TransformationBuilder:
             current = self.operations.pop()
             while self.operations:
                 next = self.operations.pop()
-                current = current * next
+                # current = current * next
+                current = next * current
             return current
 
 def translation(x, y, z):

@@ -601,7 +601,8 @@ class TestRayMath(unittest.TestCase):
 
     def test_chained_transformation_must_be_applied_in_reverse_order_using_builder(self):
         p = Point(1, 0, 1)
-        T = TransformationBuilder().rotate_x(math.pi / 2).scale(5,5,5).translate(10, 5, 7).build()
+        # T = TransformationBuilder().rotate_x(math.pi / 2).scale(5,5,5).translate(10, 5, 7).build()
+        T = TransformationBuilder().translate(10, 5, 7).scale(5,5,5).rotate_x(math.pi / 2).build()
         
         self.assertEqual(T*p, Point(15, 0, 7))
 
@@ -1092,8 +1093,8 @@ class TestRayMath(unittest.TestCase):
 
     def test_construct_ray_when_the_camera_is_transformed(self):
         c = Camera(201, 101, math.pi/2)
-        # c.transform = TransformationBuilder().rotate_y(math.pi/4).translate(0, -2, 5).build() TODO: is there something wrong with my builder?
-        c.transform = TransformationBuilder().translate(0, -2, 5).rotate_y(math.pi/4).build()
+        c.transform = TransformationBuilder().rotate_y(math.pi/4).translate(0, -2, 5).build()
+        # c.transform = TransformationBuilder().translate(0, -2, 5).rotate_y(math.pi/4).build()
         r = ray_for_pixel(c, 100, 50)
         print(r.origin)
         self.assertEqual(r.origin, Point(0,2,-5))
