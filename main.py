@@ -2,7 +2,7 @@ import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
 Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
 Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
-PointLight, position, normal_at
+PointLight, position, normal_at, view_transforfmation, World, Camera, render
 
 # Run: python3 main.py 
 class Projectile:
@@ -177,9 +177,33 @@ def ray_cast_sphere():
 
     canvas_to_ppm(canvas)
 
+def create_scene():
+    world = World()
+    world.light = PointLight(Point(-10,10,-10), Color(1,1,1))
+
+    floor = Sphere()
+    floor.transform = scaling(10, 0.01, 10)
+    floor.material = Material()
+    floor.material.color = Color(1, 0.9, 0.9)
+    floor.material.specular = 0
+    world.objects.append(floor)
+
+    left_wall = Sphere()
+    left_wall.transform = TransformationBuilder().translate(0,0,5).rotate_y(-math.pi/4).rotate_x(math.pi/2).scale(10,0.01,10).build()
+    # left_wall.transform = TransformationBuilder().scale(10,0.01,10).rotate_x(math.pi/2).rotate_y(-math.pi/4).translate(0,0,5).build()
+    left_wall.material = floor.material
+    world.objects.append(left_wall)
+
+    camera = Camera(100, 50, math.pi/3)
+
+    camera.transform = view_transforfmation(Point(0,1.5,-5), Point(0,1,0), Vector(0,1,0))
+    
+    canvas = render(camera, world)
+    canvas_to_ppm(canvas)
 if __name__ == '__main__':
     # basic_projectile()
     # ppm_projectile()
     # clock()
     # ray_cast_sphere()
-    ray_cast_sphere_lighting()
+    # ray_cast_sphere_lighting()
+    create_scene()
