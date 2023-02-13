@@ -10,7 +10,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     position, Sphere, intersect, Intersection, intersections, hit, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
-    shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render
+    shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
+    is_shadowed, EPSILON
 from math import sqrt
 
 # Run: python -m unittest rayMath_test.py
@@ -1111,6 +1112,72 @@ class TestRayMath(unittest.TestCase):
 
         image = render(c,w)
         self.assertEqual(pixel_at(image,5,5), Color(0.38066, 0.47583, 0.2855))
+
+
+    def test_lighting_with_the_surface_in_shadow(self):
+        eyev = Vector(0,0-1)
+        normalv = Vector(0,0,-1)
+        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        in_shadow = True
+        m = Material()
+        position = Point(0,0,0)
+        result = lighting(m, light, position, eyev, normalv, in_shadow)
+        self.assertEqual(result, Color(0.1,0.1,0.1))
+
+    def test_no_shadow_when_nothing_is_collinear_with_point_and_light(self):
+        w = default_world()
+        p = Point(0,10,0)
+        self.assertEqual(is_shadowed(w,p), False)
+
+    def test_shadow_when_an_object_between_the_point_and_the_light(self):
+        w = default_world()
+        p = Point(10,-10,10)
+        self.assertEqual(is_shadowed(w,p), True)
+
+    def test_no_shadow_when_object_is_behing_the_light(self):
+        w = default_world()
+        p = Point(-20,20,-20)
+        self.assertEqual(is_shadowed(w,p), False)
+
+    def test_no_shadow__when_object_is_behind_the_point(self):
+        w = default_world()
+        p = Point(-2,2,-2)
+        self.assertEqual(is_shadowed(w,p), False)
+
+
+    # def test_shade_hit_is_given_an_intersection_in_shadow(self):
+    #     w = World()
+    #     w.light = PointLight(Point(0,0,-10), Color(1,1,1))
+
+    #     s1 = Sphere()
+
+    #     w.objects.append(s1)
+
+    #     s2 = Sphere()
+    #     s2.transform = translation(0,0,10)
+
+    #     w.objects.append(s2)
+
+    #     r = Ray(Point(0,0,5), Vector(0,0,1))
+    #     i = Intersection(4, s2)
+
+    #     comps = prepare_computations(i,r)
+
+    #     c = shade_hit(w, comps)
+
+    #     self.assertEqual(c, Color(0.1, 0.1, 0.1))
+
+    # def test_hit_should_offset_point(self):
+    #     r = Ray(Point(0,0,-5), Vector(0,0,1))
+    #     s1 = Sphere()
+    #     s1.transform = translation(0,0,1)
+
+    #     i = Intersection(5, s1)
+
+    #     comps = prepare_computations(i,r)
+
+    #     self.assertEqual(comps.over_point.tuple.z < -EPSILON/2, True)
+    #     self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
 
 if __name__ == '__main__':
     unittest.main()

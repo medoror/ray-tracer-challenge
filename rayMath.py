@@ -6,8 +6,10 @@ import sys
 import copy
 
 TUPLE_EPSILON = 0.0001
+EPSILON = 0.00001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
+
 
 class Camera:
     def __init__(self, hsize, vsize, field_of_view):
@@ -37,6 +39,7 @@ class PrepareComputations:
         self.point = position(ray, self.t)
         self.eyev = -ray.direction
         self.normalv = normal_at(self.object, self.point)
+        self.over_point = Point(0,0,0)
         self.inside = False
 
 class World:
@@ -646,7 +649,7 @@ def normal_at(sphere, world_point):
 def reflect(in_vector, normal):
     return in_vector - normal * 2 * dot(in_vector, normal)
 
-def lighting(material, light, point, eyev, normalv):
+def lighting(material, light, point, eyev, normalv, in_shadow=False):
     # combine the surface color with the lights color/intensity
     effective_color = material.color * light.intensity
     # find the direction to the light source
@@ -677,7 +680,10 @@ def lighting(material, light, point, eyev, normalv):
             # compute the specular contribution
             factor = math.pow(reflect_dot_eye, material.shininess)
             specular = light.intensity * material.specular * factor
-    return ambient + diffuse + specular
+    if(in_shadow):
+        return ambient
+    else:
+        return ambient + diffuse + specular
 
 def default_world():
     w = World()
@@ -714,6 +720,7 @@ def prepare_computations(intersection, ray):
     if dot(comps.normalv, comps.eyev) < 0: 
         comps.inside = True
         comps.normalv = -comps.normalv
+        comps.over_point = comps.point + comps.normalv * EPSILON
     else:
         comps.inside = False
     return comps
@@ -779,4 +786,19 @@ def render(camera, world):
             write_pixel(image, x, y, color)
     
     return image
+
+def is_shadowed(world, point):
+    v = world.light.position - point
+    distance = magnitude(v)
+    direction = normalize(v)
+
+    r = Ray(point, direction)
+
+    intersections = intersect_world(world, r)
+
+    h = hit(intersections)
+    if h is not None and h.t < distance:
+        return True
+    else:
+        return False
 
