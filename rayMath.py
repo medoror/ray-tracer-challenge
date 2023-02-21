@@ -657,6 +657,9 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
     # compute the ambient contribution
     ambient = effective_color * material.ambient
 
+    if(in_shadow):
+        return ambient
+
     # light_dot_normal represents the cosine of the angle between the light_vector
     # and the normal vector.  A negative number means the light is on the other side
     # of the surface
@@ -680,10 +683,8 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
             # compute the specular contribution
             factor = math.pow(reflect_dot_eye, material.shininess)
             specular = light.intensity * material.specular * factor
-    if(in_shadow):
-        return ambient
-    else:
-        return ambient + diffuse + specular
+
+    return ambient + diffuse + specular
 
 def default_world():
     w = World()
@@ -726,7 +727,8 @@ def prepare_computations(intersection, ray):
     return comps
 
 def shade_hit(world, comps):
-    return lighting(comps.object.material, world.light, comps.point, comps.eyev, comps.normalv)
+    shadow = is_shadowed(world, comps.over_point)
+    return lighting(comps.object.material, world.light, comps.over_point, comps.eyev, comps.normalv, shadow)
 
 def color_at(world, ray):
     xs = intersect_world(world, ray)

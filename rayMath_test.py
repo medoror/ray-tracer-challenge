@@ -1007,6 +1007,7 @@ class TestRayMath(unittest.TestCase):
         w = default_world()
         r = Ray(Point(0,0,-5), Vector(0,0,1))
         c = color_at(w,r)
+        print(c)
         self.assertEqual(c, Color(0.38066, 0.47583, 0.2855))
 
     def test_color_with_intersection_behind_ray(self):
@@ -1097,7 +1098,7 @@ class TestRayMath(unittest.TestCase):
         c.transform = TransformationBuilder().rotate_y(math.pi/4).translate(0, -2, 5).build()
         # c.transform = TransformationBuilder().translate(0, -2, 5).rotate_y(math.pi/4).build()
         r = ray_for_pixel(c, 100, 50)
-        print(r.origin)
+        # print(r.origin)
         self.assertEqual(r.origin, Point(0,2,-5))
         self.assertEqual(r.direction, Vector(math.sqrt(2)/2, 0, -math.sqrt(2)/2))
     
@@ -1145,27 +1146,28 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(is_shadowed(w,p), False)
 
 
-    # def test_shade_hit_is_given_an_intersection_in_shadow(self):
-    #     w = World()
-    #     w.light = PointLight(Point(0,0,-10), Color(1,1,1))
+    def test_shade_hit_is_given_an_intersection_in_shadow(self):
+        w = World()
+        w.light = PointLight(Point(0,0,-10), Color(1,1,1))
 
-    #     s1 = Sphere()
+        s1 = Sphere()
 
-    #     w.objects.append(s1)
+        w.objects.append(s1)
 
-    #     s2 = Sphere()
-    #     s2.transform = translation(0,0,10)
+        s2 = Sphere()
+        s2.transform = translation(0,0,10)
 
-    #     w.objects.append(s2)
+        w.objects.append(s2)
 
-    #     r = Ray(Point(0,0,5), Vector(0,0,1))
-    #     i = Intersection(4, s2)
+        r = Ray(Point(0,0,5), Vector(0,0,1))
+        i = Intersection(4, s2)
 
-    #     comps = prepare_computations(i,r)
+        comps = prepare_computations(i,r)
 
-    #     c = shade_hit(w, comps)
+        c = shade_hit(w, comps)
 
-    #     self.assertEqual(c, Color(0.1, 0.1, 0.1))
+        # print(c)
+        self.assertEqual(c, Color(0.1, 0.1, 0.1))
 
     # def test_hit_should_offset_point(self):
     #     r = Ray(Point(0,0,-5), Vector(0,0,1))
