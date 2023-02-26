@@ -1164,15 +1164,15 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(c, Color(0.1, 0.1, 0.1))
 
     def test_hit_should_offset_point(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s1 = Sphere()
-        s1.transform = translation(0,0,1)
+        s1.transform = translation(0, 0, 1)
 
         i = Intersection(5, s1)
 
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
 
-        self.assertEqual(comps.over_point.tuple.z < -EPSILON/2, True)
+        self.assertEqual(comps.over_point.tuple.z < -EPSILON / 2, True)
         self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
 
 
