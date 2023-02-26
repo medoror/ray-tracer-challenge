@@ -11,6 +11,15 @@ MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
 
+def auto_str(cls):
+    def __str__(self):
+        return '(%s)' % (', '.join('%s=%s' % item for item in vars(self).items()))
+
+    cls.__str__ = __str__
+    return cls
+
+
+@auto_str
 class Camera:
     def __init__(self, hsize, vsize, field_of_view):
         self.hsize = hsize
@@ -24,7 +33,7 @@ class Camera:
         half_view = math.tan(field_of_view / 2)
         aspect = hsize / vsize
 
-        if (aspect >= 1):
+        if aspect >= 1:
             self.half_width = half_view
             self.half_height = half_view / aspect
         else:
@@ -33,6 +42,7 @@ class Camera:
         self.pixel_size = (self.half_width * 2) / hsize
 
 
+@auto_str
 class PrepareComputations:
     def __init__(self, intersection, ray):
         self.t = intersection.t
@@ -44,12 +54,14 @@ class PrepareComputations:
         self.inside = False
 
 
+@auto_str
 class World:
     def __init__(self):
         self.objects = []
         self.light = None
 
 
+@auto_str
 class Material:
     def __init__(self):
         self.color = Color(1, 1, 1)
@@ -69,18 +81,21 @@ class Material:
         return False
 
 
+@auto_str
 class PointLight:
     def __init__(self, position, intensity):
         self.position = position
         self.intensity = intensity
 
 
+@auto_str
 class Intersection:
     def __init__(self, distance_t, s_object):
         self.t = distance_t
         self.s_object = s_object  # s_object -> x_object??
 
 
+@auto_str
 class Sphere:
     def __init__(self):
         self.transform = Matrix([[1, 0, 0, 0],
@@ -91,12 +106,14 @@ class Sphere:
         self.material = Material()
 
 
+@auto_str
 class Ray:
     def __init__(self, origin, direction):
         self.origin = origin
         self.direction = direction
 
 
+@auto_str
 class Matrix:
     def __init__(self, matrix):
         self.matrix = matrix
@@ -186,6 +203,7 @@ class Matrix:
     #     return Matrix([[float(y) for y in x] for x in matrix.matrix])
 
 
+@auto_str
 class Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
         self.x = x
@@ -239,11 +257,8 @@ class Tuple:
         w = self.w / scalar
         return Tuple(x, y, z, w)
 
-    # Untested!!
-    def __str__(self):
-        return "Tuple: ({0},{1},{2})".format(self.x, self.y, self.z, self.w)
 
-
+@auto_str
 class Point:
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.tuple = Tuple()
@@ -251,9 +266,6 @@ class Point:
         self.tuple.y = y
         self.tuple.z = z
         self.tuple.w = 1.0
-
-    def __str__(self):
-        return "Point: ({0},{1}, {2})".format(self.tuple.x, self.tuple.y, self.tuple.z)
 
     def __sub__(self, other):
         t1 = self.tuple - other.tuple
@@ -273,6 +285,7 @@ class Point:
 
 
 # TOOD: Think about extending tuple to create a point and vector instead of composition
+@auto_str
 class Vector:
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.tuple = Tuple()
@@ -302,11 +315,8 @@ class Vector:
             return self.tuple == other.tuple
         return False
 
-    # Untested!!
-    def __str__(self):
-        return "Vector: ({0},{1},{2})".format(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
 
-
+@auto_str
 class Color:
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.tuple = Tuple()
@@ -346,10 +356,8 @@ class Color:
         blue = c1.z * c2.z
         return Color(red, green, blue)
 
-    def __str__(self):
-        return "Color: ({0},{1},{2},{3})".format(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
 
-
+@auto_str
 class Canvas:
     def __init__(self, width, height, fill=Color(0, 0, 0), max_color_value=255):
         self.width = width
@@ -520,6 +528,7 @@ def inverse(matrix):
     return return_matrix
 
 
+@auto_str
 class TransformationBuilder:
     def __init__(self):
         self.operations = []
