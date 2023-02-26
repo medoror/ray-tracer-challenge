@@ -3,8 +3,7 @@ from math import sqrt, fabs, ceil
 import sys
 import copy
 
-TUPLE_EPSILON = 0.0001
-EPSILON = 0.00001
+EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
 MAX_CHARACTER_LENGTH = 70
 
@@ -225,7 +224,7 @@ class Tuple:
     # can I create my own floating point and override equal?
     @staticmethod
     def equals(a, b):
-        return fabs(a - b) < TUPLE_EPSILON
+        return fabs(a - b) < EPSILON
 
     def __add__(self, other):
         x = self.x + other.x

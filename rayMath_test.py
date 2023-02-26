@@ -1007,7 +1007,6 @@ class TestRayMath(unittest.TestCase):
         w = default_world()
         r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         c = color_at(w, r)
-        print(c)
         self.assertEqual(c, Color(0.38066, 0.47583, 0.2855))
 
     def test_color_with_intersection_behind_ray(self):
@@ -1096,9 +1095,7 @@ class TestRayMath(unittest.TestCase):
     def test_construct_ray_when_the_camera_is_transformed(self):
         c = Camera(201, 101, math.pi / 2)
         c.transform = TransformationBuilder().rotate_y(math.pi / 4).translate(0, -2, 5).build()
-        # c.transform = TransformationBuilder().translate(0, -2, 5).rotate_y(math.pi/4).build()
         r = ray_for_pixel(c, 100, 50)
-        # print(r.origin)
         self.assertEqual(r.origin, Point(0, 2, -5))
         self.assertEqual(r.direction, Vector(math.sqrt(2) / 2, 0, -math.sqrt(2) / 2))
 
@@ -1164,20 +1161,19 @@ class TestRayMath(unittest.TestCase):
 
         c = shade_hit(w, comps)
 
-        # print(c)
         self.assertEqual(c, Color(0.1, 0.1, 0.1))
 
-    # def test_hit_should_offset_point(self):
-    #     r = Ray(Point(0,0,-5), Vector(0,0,1))
-    #     s1 = Sphere()
-    #     s1.transform = translation(0,0,1)
+    def test_hit_should_offset_point(self):
+        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        s1 = Sphere()
+        s1.transform = translation(0,0,1)
 
-    #     i = Intersection(5, s1)
+        i = Intersection(5, s1)
 
-    #     comps = prepare_computations(i,r)
+        comps = prepare_computations(i,r)
 
-    #     self.assertEqual(comps.over_point.tuple.z < -EPSILON/2, True)
-    #     self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
+        self.assertEqual(comps.over_point.tuple.z < -EPSILON/2, True)
+        self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
 
 
 if __name__ == '__main__':
