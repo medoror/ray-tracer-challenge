@@ -17,20 +17,21 @@ class Camera:
         self.vsize = vsize
         self.field_of_view = field_of_view
         self.transform = Matrix([[1, 0, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]])
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]])
 
         half_view = math.tan(field_of_view / 2)
         aspect = hsize / vsize
 
-        if(aspect >= 1):
+        if (aspect >= 1):
             self.half_width = half_view
             self.half_height = half_view / aspect
         else:
             self.half_width = half_view * aspect
             self.half_height = half_view
         self.pixel_size = (self.half_width * 2) / hsize
+
 
 class PrepareComputations:
     def __init__(self, intersection, ray):
@@ -39,17 +40,19 @@ class PrepareComputations:
         self.point = position(ray, self.t)
         self.eyev = -ray.direction
         self.normalv = normal_at(self.object, self.point)
-        self.over_point = Point(0,0,0)
+        self.over_point = Point(0, 0, 0)
         self.inside = False
+
 
 class World:
     def __init__(self):
         self.objects = []
         self.light = None
 
+
 class Material:
     def __init__(self):
-        self.color = Color(1,1,1)
+        self.color = Color(1, 1, 1)
         self.ambient = 0.1
         self.diffuse = 0.9
         self.specular = 0.9
@@ -58,36 +61,41 @@ class Material:
     def __eq__(self, other):
         if isinstance(other, Material):
             return self.color == other.color and \
-             self.ambient == other.ambient and \
-             self.diffuse == other.diffuse and \
-             self.specular == other.specular and \
-             self.shininess == other.shininess
+                self.ambient == other.ambient and \
+                self.diffuse == other.diffuse and \
+                self.specular == other.specular and \
+                self.shininess == other.shininess
 
         return False
+
 
 class PointLight:
     def __init__(self, position, intensity):
         self.position = position
         self.intensity = intensity
 
+
 class Intersection:
     def __init__(self, distance_t, s_object):
         self.t = distance_t
-        self.s_object = s_object # s_object -> x_object??
+        self.s_object = s_object  # s_object -> x_object??
+
 
 class Sphere:
     def __init__(self):
         self.transform = Matrix([[1, 0, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]])
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]])
 
         self.material = Material()
+
 
 class Ray:
     def __init__(self, origin, direction):
         self.origin = origin
         self.direction = direction
+
 
 class Matrix:
     def __init__(self, matrix):
@@ -195,7 +203,7 @@ class Tuple:
         if isinstance(other, Tuple):
             # return self.x == other.x and self.y == other.y and self.z == other.z and self.w == other.w
             return Tuple.equals(self.x, other.x) and Tuple.equals(self.y, other.y) and Tuple.equals(self.z, other.z) \
-                   and Tuple.equals(self.w, other.w)
+                and Tuple.equals(self.w, other.w)
         return False
 
     # can I create my own floating point and override equal?
@@ -286,7 +294,7 @@ class Vector:
         return Vector(t1.x, t1.y, t1.z)
 
     def __neg__(self):
-        t = Tuple(self.tuple.x,self.tuple.y,self.tuple.z,self.tuple.w)
+        t = Tuple(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
         return Vector(-t.x, -t.y, -t.z)
 
     def __eq__(self, other):
@@ -348,6 +356,7 @@ class Canvas:
         self.height = height
         self.pixels = [[fill for x in range(width)] for y in range(height)]
         self.max_color_value = max_color_value
+
 
 # TODO: write a variant of this that takes a point
 def write_pixel(canvas, x, y, color):
@@ -510,16 +519,17 @@ def inverse(matrix):
 
     return return_matrix
 
+
 class TransformationBuilder:
     def __init__(self):
         self.operations = []
- 
+
     # is this correct?
     def identity(self):
         self.operations.append(Matrix([[1, 0, 0, 0],
                                        [0, 1, 0, 0],
                                        [0, 0, 1, 0],
-                                       [0, 0, 0, 1]]) )
+                                       [0, 0, 0, 1]]))
         return self
 
     def rotate_x(self, radius):
@@ -529,21 +539,21 @@ class TransformationBuilder:
     def rotate_y(self, radius):
         self.operations.append(rotation_y(radius))
         return self
-     
+
     def rotate_z(self, radius):
         self.operations.append(rotation_z(radius))
         return self
 
-    def scale(self,x,y,z):
-        self.operations.append(scaling(x,y,z))
+    def scale(self, x, y, z):
+        self.operations.append(scaling(x, y, z))
         return self
 
     def shear(self, xy, xz, yx, yz, zx, zy):
         self.operations.append(shearing(xy, xz, yx, yz, zx, zy))
         return self
 
-    def translate(self,x,y,z):
-        self.operations.append(translation(x,y,z))
+    def translate(self, x, y, z):
+        self.operations.append(translation(x, y, z))
         return self
 
     def build(self):
@@ -556,6 +566,7 @@ class TransformationBuilder:
                 # current = current * next
                 current = next * current
             return current
+
 
 def translation(x, y, z):
     return Matrix([[1, 0, 0, x],
@@ -598,18 +609,20 @@ def shearing(xy, xz, yx, yz, zx, zy):
                    [zx, zy, 1, 0],
                    [0, 0, 0, 1]])
 
+
 # todo: change this name maybe position_along_ray?
 def position(ray, t):
     return ray.origin + ray.direction * t
 
+
 def intersect(sphere, ray):
     transformed_ray = transform(ray, inverse(sphere.transform))
-    sphere_to_ray = transformed_ray.origin - Point(0,0,0) # unit circle for now
+    sphere_to_ray = transformed_ray.origin - Point(0, 0, 0)  # unit circle for now
     a = dot(transformed_ray.direction, transformed_ray.direction)
     b = 2 * dot(transformed_ray.direction, sphere_to_ray)
     c = dot(sphere_to_ray, sphere_to_ray) - 1
 
-    discriminant = b*b - 4 * a * c
+    discriminant = b * b - 4 * a * c
     # print("discriminant: {0}".format(discriminant))
 
     if discriminant < 0:
@@ -624,6 +637,7 @@ def intersect(sphere, ray):
 def intersections(*intersections):
     return intersections
 
+
 def hit(intersections):
     current_smallest = Intersection(sys.maxsize, None)
     for intersection in intersections:
@@ -633,21 +647,26 @@ def hit(intersections):
             current_smallest = intersection
     return None if current_smallest.t == sys.maxsize else current_smallest
 
+
 def transform(ray, matrix):
-    return Ray(matrix * ray.origin,  matrix * ray.direction)
+    return Ray(matrix * ray.origin, matrix * ray.direction)
+
 
 def set_transform(sphere, translation):
     sphere.transform = translation
 
+
 def normal_at(sphere, world_point):
     object_point = inverse(sphere.transform) * world_point
-    object_normal = object_point - Point(0,0,0)
+    object_normal = object_point - Point(0, 0, 0)
     world_normal = transpose(inverse(sphere.transform)) * object_normal
     world_normal.tuple.w = 0
     return normalize(world_normal)
 
+
 def reflect(in_vector, normal):
     return in_vector - normal * 2 * dot(in_vector, normal)
+
 
 def lighting(material, light, point, eyev, normalv, in_shadow=False):
     # combine the surface color with the lights color/intensity
@@ -657,7 +676,7 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
     # compute the ambient contribution
     ambient = effective_color * material.ambient
 
-    if(in_shadow):
+    if (in_shadow):
         return ambient
 
     # light_dot_normal represents the cosine of the angle between the light_vector
@@ -666,8 +685,8 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
     light_dot_normal = dot(lightv, normalv)
     if light_dot_normal < 0:
         # can i make this a const
-        diffuse = Color(0,0,0)
-        specular = Color(0,0,0)
+        diffuse = Color(0, 0, 0)
+        specular = Color(0, 0, 0)
     else:
         # compute the diffuse contribution
         diffuse = effective_color * material.diffuse * light_dot_normal
@@ -678,13 +697,14 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
         reflect_dot_eye = dot(reflectv, eyev)
 
         if reflect_dot_eye <= 0:
-            specular = Color(0,0,0) # can i make this a const
+            specular = Color(0, 0, 0)  # can i make this a const
         else:
             # compute the specular contribution
             factor = math.pow(reflect_dot_eye, material.shininess)
             specular = light.intensity * material.specular * factor
 
     return ambient + diffuse + specular
+
 
 def default_world():
     w = World()
@@ -695,13 +715,14 @@ def default_world():
     m.diffuse = 0.7
     m.specular = 0.2
     s1.material = m
-    
+
     s2 = Sphere()
     s2.transform = scaling(0.5, 0.5, 0.5)
 
-    w.objects = [s1,s2]
-    w.light = PointLight(Point(-10,10,-10), Color(1,1,1))
+    w.objects = [s1, s2]
+    w.light = PointLight(Point(-10, 10, -10), Color(1, 1, 1))
     return w
+
 
 def intersect_world(world, ray):
     # there has got to be cleaner way to do this
@@ -712,13 +733,14 @@ def intersect_world(world, ray):
             continue
         returned_intersections.append(computed_intersections[0])
         returned_intersections.append(computed_intersections[1])
-    returned_intersections.sort(key=lambda i : i.t)
+    returned_intersections.sort(key=lambda i: i.t)
     return returned_intersections
+
 
 def prepare_computations(intersection, ray):
     comps = PrepareComputations(intersection, ray)
 
-    if dot(comps.normalv, comps.eyev) < 0: 
+    if dot(comps.normalv, comps.eyev) < 0:
         comps.inside = True
         comps.normalv = -comps.normalv
         comps.over_point = comps.point + comps.normalv * EPSILON
@@ -726,16 +748,18 @@ def prepare_computations(intersection, ray):
         comps.inside = False
     return comps
 
+
 def shade_hit(world, comps):
     shadow = is_shadowed(world, comps.over_point)
     return lighting(comps.object.material, world.light, comps.over_point, comps.eyev, comps.normalv, shadow)
+
 
 def color_at(world, ray):
     xs = intersect_world(world, ray)
 
     possible_intersection = hit(xs)
     if possible_intersection == None:
-        return Color(0,0,0)
+        return Color(0, 0, 0)
     else:
         comps = prepare_computations(possible_intersection, ray)
         # return shade_hit(world, comps)
@@ -743,18 +767,20 @@ def color_at(world, ray):
         # print("Computed Color {0}".format(the_color))
         return the_color
 
+
 def view_transforfmation(from_vector, to_vector, up_vector):
     forward = normalize(to_vector - from_vector)
     upn = normalize(up_vector)
     left = cross(forward, upn)
     true_up = cross(left, forward)
 
-    orientation = Matrix([[left.tuple.x, left.tuple.y, left.tuple.z, 0 ],
-                          [ true_up.tuple.x, true_up.tuple.y, true_up.tuple.z, 0 ],
-                          [ -forward.tuple.x , -forward.tuple.y, -forward.tuple.z, 0 ],
-                          [ 0,0,0,1 ]])
+    orientation = Matrix([[left.tuple.x, left.tuple.y, left.tuple.z, 0],
+                          [true_up.tuple.x, true_up.tuple.y, true_up.tuple.z, 0],
+                          [-forward.tuple.x, -forward.tuple.y, -forward.tuple.z, 0],
+                          [0, 0, 0, 1]])
 
-    return orientation * translation(-from_vector.tuple.x,-from_vector.tuple.y,-from_vector.tuple.z)
+    return orientation * translation(-from_vector.tuple.x, -from_vector.tuple.y, -from_vector.tuple.z)
+
 
 def ray_for_pixel(camera, px, py):
     # the offset from the edge of the canvas to the pixels center
@@ -778,6 +804,7 @@ def ray_for_pixel(camera, px, py):
 
     return Ray(origin, direction)
 
+
 def render(camera, world):
     image = Canvas(camera.hsize, camera.vsize)
 
@@ -786,8 +813,9 @@ def render(camera, world):
             ray = ray_for_pixel(camera, x, y)
             color = color_at(world, ray)
             write_pixel(image, x, y, color)
-    
+
     return image
+
 
 def is_shadowed(world, point):
     v = world.light.position - point
@@ -803,4 +831,3 @@ def is_shadowed(world, point):
         return True
     else:
         return False
-

@@ -14,6 +14,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     is_shadowed, EPSILON
 from math import sqrt
 
+
 # Run: python -m unittest rayMath_test.py
 
 class TestRayMath(unittest.TestCase):
@@ -603,9 +604,9 @@ class TestRayMath(unittest.TestCase):
     def test_chained_transformation_must_be_applied_in_reverse_order_using_builder(self):
         p = Point(1, 0, 1)
         # T = TransformationBuilder().rotate_x(math.pi / 2).scale(5,5,5).translate(10, 5, 7).build()
-        T = TransformationBuilder().translate(10, 5, 7).scale(5,5,5).rotate_x(math.pi / 2).build()
-        
-        self.assertEqual(T*p, Point(15, 0, 7))
+        T = TransformationBuilder().translate(10, 5, 7).scale(5, 5, 5).rotate_x(math.pi / 2).build()
+
+        self.assertEqual(T * p, Point(15, 0, 7))
 
     def test_clock_playground(self):
         # twelve o clock (0,0,1)
@@ -616,71 +617,70 @@ class TestRayMath(unittest.TestCase):
 
         # three o clock (1,0,0)
         r = rotation_y(3 * (math.pi / 6))
-        twelve = Point(0,0,1)
+        twelve = Point(0, 0, 1)
         three = r * twelve
-        self.assertEqual(three, Point(1,0,0))
+        self.assertEqual(three, Point(1, 0, 0))
 
         # six o clock (0,0,-1)
         r = rotation_y(6 * (math.pi / 6))
-        twelve = Point(0,0,1)
+        twelve = Point(0, 0, 1)
         six = r * twelve
-        self.assertEqual(six, Point(0,0,-1))
+        self.assertEqual(six, Point(0, 0, -1))
 
         # nine o clock (-1,0,0)
         r = rotation_y(9 * (math.pi / 6))
-        twelve = Point(0,0,1)
+        twelve = Point(0, 0, 1)
         nine = r * twelve
-        self.assertEqual(nine, Point(-1,0,0))
-
+        self.assertEqual(nine, Point(-1, 0, 0))
 
     def test_creating_and_querying_a_ray(self):
-        origin = Point(1,2,3)
-        direction = Vector(4,5,6)
+        origin = Point(1, 2, 3)
+        direction = Vector(4, 5, 6)
         r = Ray(origin, direction)
         self.assertEqual(r.origin, origin)
         self.assertEqual(r.direction, direction)
 
     def test_computing_point_from_distance(self):
-        r = Ray(Point(2,3,4), Vector(1,0,0))
-        self.assertEqual(position(r,0), Point(2,3,4))
-        self.assertEqual(position(r,1), Point(3,3,4))
-        self.assertEqual(position(r,-1), Point(1,3,4))
-        self.assertEqual(position(r,2.5), Point(4.5,3,4))
+        r = Ray(Point(2, 3, 4), Vector(1, 0, 0))
+        self.assertEqual(position(r, 0), Point(2, 3, 4))
+        self.assertEqual(position(r, 1), Point(3, 3, 4))
+        self.assertEqual(position(r, -1), Point(1, 3, 4))
+        self.assertEqual(position(r, 2.5), Point(4.5, 3, 4))
 
     def test_ray_intersects_a_sphere_at_two_points(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].t, 4.0)
         self.assertEqual(xs[1].t, 6.0)
 
     def test_ray_intersects_a_sphere_at_a_tangent(self):
-        r = Ray(Point(0,1,-5), Vector(0,0,1))
+        r = Ray(Point(0, 1, -5), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].t, 5.0)
         self.assertEqual(xs[1].t, 5.0)
 
     def test_ray_misses_a_sphere(self):
-        r = Ray(Point(0,2,-5), Vector(0,0,1))
+        r = Ray(Point(0, 2, -5), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 0)
 
     def test_ray_originates_inside_a_sphere(self):
-        r = Ray(Point(0,0,0), Vector(0,0,1))
+        r = Ray(Point(0, 0, 0), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].t, -1.0)
         self.assertEqual(xs[1].t, 1.0)
 
     def test_sphere_is_behind_a_ray(self):
-        r = Ray(Point(0,0,5), Vector(0,0,1))
+        r = Ray(Point(0, 0, 5), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].t, -6.0)
         self.assertEqual(xs[1].t, -4.0)
@@ -689,12 +689,12 @@ class TestRayMath(unittest.TestCase):
         s = Sphere()
         i = Intersection(3.5, s)
         self.assertEqual(i.t, 3.5)
-        self.assertEqual(i.s_object,s)
+        self.assertEqual(i.s_object, s)
 
     def test_aggregating_intersections(self):
         s = Sphere()
-        i1 = Intersection(1,s)
-        i2 = Intersection(2,s)
+        i1 = Intersection(1, s)
+        i2 = Intersection(2, s)
 
         xs = intersections(i1, i2)
         self.assertEqual(len(xs), 2)
@@ -702,159 +702,159 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(xs[1].t, 2)
 
     def test_intersect_sets_the_object_on_the_intersection(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
-        xs = intersect(s,r)
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].s_object, s)
         self.assertEqual(xs[1].s_object, s)
 
     def test_the_hit_when_all_intersections_have_a_positive_t(self):
         s = Sphere()
-        i1 = Intersection(1,s)
-        i2 = Intersection(2,s)
+        i1 = Intersection(1, s)
+        i2 = Intersection(2, s)
 
-        xs = intersections(i2,i1)
+        xs = intersections(i2, i1)
 
         i = hit(xs)
         self.assertEqual(i, i1)
 
     def test_the_hit_when_some_intersections_have_a_negative_t(self):
         s = Sphere()
-        i1 = Intersection(-1,s)
-        i2 = Intersection(1,s)
+        i1 = Intersection(-1, s)
+        i2 = Intersection(1, s)
 
-        xs = intersections(i2,i1)
+        xs = intersections(i2, i1)
 
         i = hit(xs)
         self.assertEqual(i, i2)
 
     def test_the_hit_when_all_intersections_have_a_negative_t(self):
         s = Sphere()
-        i1 = Intersection(-2,s)
-        i2 = Intersection(-1,s)
+        i1 = Intersection(-2, s)
+        i2 = Intersection(-1, s)
 
-        xs = intersections(i2,i1)
+        xs = intersections(i2, i1)
 
         i = hit(xs)
         self.assertEqual(i, None)
 
     def test_the_hit_is_always_the_lowest_nonnegative_intersection(self):
         s = Sphere()
-        i1 = Intersection(5,s)
-        i2 = Intersection(7,s)
-        i3 = Intersection(-3,s)
-        i4 = Intersection(2,s)
+        i1 = Intersection(5, s)
+        i2 = Intersection(7, s)
+        i3 = Intersection(-3, s)
+        i4 = Intersection(2, s)
 
-        xs = intersections(i1,i2,i3,i4)
+        xs = intersections(i1, i2, i3, i4)
 
         i = hit(xs)
         self.assertEqual(i, i4)
 
     def test_translating_a_ray(self):
-        r = Ray(Point(1,2,3), Vector(0,1,0))
-        m = translation(3,4,5)
-        r2 = transform(r,m)
-        self.assertEqual(r2.origin, Point(4,6,8))
-        self.assertEqual(r2.direction, Vector(0,1,0))
+        r = Ray(Point(1, 2, 3), Vector(0, 1, 0))
+        m = translation(3, 4, 5)
+        r2 = transform(r, m)
+        self.assertEqual(r2.origin, Point(4, 6, 8))
+        self.assertEqual(r2.direction, Vector(0, 1, 0))
 
     def test_scaling_a_ray(self):
-        r = Ray(Point(1,2,3), Vector(0,1,0))
-        m = scaling(2,3,4)
-        r2 = transform(r,m)
-        self.assertEqual(r2.origin, Point(2,6,12))
-        self.assertEqual(r2.direction, Vector(0,3,0))
+        r = Ray(Point(1, 2, 3), Vector(0, 1, 0))
+        m = scaling(2, 3, 4)
+        r2 = transform(r, m)
+        self.assertEqual(r2.origin, Point(2, 6, 12))
+        self.assertEqual(r2.direction, Vector(0, 3, 0))
 
     def test_sphere_default_transformation(self):
         s = Sphere()
         identity_matrix = Matrix([[1, 0, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]])
+                                  [0, 1, 0, 0],
+                                  [0, 0, 1, 0],
+                                  [0, 0, 0, 1]])
         self.assertEqual(s.transform, identity_matrix)
 
     def test_change_sphere_transformation(self):
         s = Sphere()
-        t = translation(2,3,4)
-        set_transform(s,t)
+        t = translation(2, 3, 4)
+        set_transform(s, t)
         self.assertEqual(s.transform, t)
 
     def test_intersecting_a_scaled_sphere_with_a_ray(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
-        set_transform(s, scaling(2,2,2))
-        xs = intersect(s,r)
+        set_transform(s, scaling(2, 2, 2))
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 2)
         self.assertEqual(xs[0].t, 3)
         self.assertEqual(xs[1].t, 7)
 
     def test_intersecting_a_translated_sphere_with_a_ray(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
-        set_transform(s, translation(5,0,0))
-        xs = intersect(s,r)
+        set_transform(s, translation(5, 0, 0))
+        xs = intersect(s, r)
         self.assertEqual(len(xs), 0)
 
     def test_normal_on_a_sphere_at_a_point_on_the_x_axis(self):
         s = Sphere()
-        n = normal_at(s, Point(1,0,0))
-        self.assertEqual(n, Vector(1,0,0))
+        n = normal_at(s, Point(1, 0, 0))
+        self.assertEqual(n, Vector(1, 0, 0))
 
     def test_normal_on_a_sphere_at_a_point_on_the_y_axis(self):
         s = Sphere()
-        n = normal_at(s, Point(0,1,0))
-        self.assertEqual(n, Vector(0,1,0))
+        n = normal_at(s, Point(0, 1, 0))
+        self.assertEqual(n, Vector(0, 1, 0))
 
     def test_normal_on_a_sphere_at_a_point_on_the_z_axis(self):
         s = Sphere()
-        n = normal_at(s, Point(0,0,1))
-        self.assertEqual(n, Vector(0,0,1))
+        n = normal_at(s, Point(0, 0, 1))
+        self.assertEqual(n, Vector(0, 0, 1))
 
     def test_normal_on_a_sphere_at_a_nonaxial_point(self):
         s = Sphere()
-        n = normal_at(s, Point(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
-        self.assertEqual(n, Vector(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
+        n = normal_at(s, Point(sqrt(3) / 3, sqrt(3) / 3, sqrt(3) / 3))
+        self.assertEqual(n, Vector(sqrt(3) / 3, sqrt(3) / 3, sqrt(3) / 3))
 
     def test_normal_is_a_normalized_vector(self):
         s = Sphere()
-        n = normal_at(s, Point(sqrt(3)/3,sqrt(3)/3,sqrt(3)/3))
+        n = normal_at(s, Point(sqrt(3) / 3, sqrt(3) / 3, sqrt(3) / 3))
         self.assertEqual(n, normalize(n))
 
     def test_compute_normal_on_translated_sphere(self):
         s = Sphere()
-        set_transform(s, translation(0,1,0))
+        set_transform(s, translation(0, 1, 0))
         n = normal_at(s, Point(0, 1.70711, -0.70711))
         self.assertEqual(n, Vector(0, 0.70711, -0.70711))
 
     def test_compute_normal_on_transformed_sphere(self):
         s = Sphere()
-        m = scaling(1, 0.5, 1) * rotation_z(math.pi/5)
-        set_transform(s,m)
-        n = normal_at(s, Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
+        m = scaling(1, 0.5, 1) * rotation_z(math.pi / 5)
+        set_transform(s, m)
+        n = normal_at(s, Point(0, math.sqrt(2) / 2, -math.sqrt(2) / 2))
         self.assertEqual(n, Vector(0, 0.97014, -0.24254))
 
     def test_reflecting_vector_approaching_45_degrees(self):
         v = Vector(1, -1, 0)
         n = Vector(0, 1, 0)
-        r = reflect(v,n)
-        self.assertEqual(r, Vector(1,1,0))
+        r = reflect(v, n)
+        self.assertEqual(r, Vector(1, 1, 0))
 
     def test_reflecting_vector_off_slanted_surface(self):
         v = Vector(0, -1, 0)
-        n = Vector(math.sqrt(2)/2, math.sqrt(2)/2, 0)
-        r = reflect(v,n)
-        self.assertEqual(r, Vector(1,0,0))
+        n = Vector(math.sqrt(2) / 2, math.sqrt(2) / 2, 0)
+        r = reflect(v, n)
+        self.assertEqual(r, Vector(1, 0, 0))
 
     def test_point_light_has_position_and_intensity(self):
-        intensity = Color(1,1,1)
-        position = Point(0,0,0)
+        intensity = Color(1, 1, 1)
+        position = Point(0, 0, 0)
         light = PointLight(position, intensity)
         self.assertEqual(light.position, position)
         self.assertEqual(light.intensity, intensity)
 
     def test_default_material(self):
         m = Material()
-        self.assertEqual(m.color, Color(1,1,1))
+        self.assertEqual(m.color, Color(1, 1, 1))
         self.assertEqual(m.ambient, 0.1)
         self.assertEqual(m.diffuse, 0.9)
         self.assertEqual(m.specular, 0.9)
@@ -874,46 +874,46 @@ class TestRayMath(unittest.TestCase):
 
     def test_lighting_with_eye_between_ligth_and_surface(self):
         m = Material()
-        position = Point(0,0,0)
-        eyev = Vector(0,0,-1)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        position = Point(0, 0, 0)
+        eyev = Vector(0, 0, -1)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
         result = lighting(m, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.9, 1.9, 1.9))
-    
+
     def test_lighting_with_eye_between_light_and_surface_eye_offset_45_degrees(self):
         m = Material()
-        position = Point(0,0,0)
-        eyev = Vector(0,math.sqrt(2)/2,-math.sqrt(2)/2)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        position = Point(0, 0, 0)
+        eyev = Vector(0, math.sqrt(2) / 2, -math.sqrt(2) / 2)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
         result = lighting(m, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.0, 1.0, 1.0))
 
     def test_lighting_with_eye_opposite_surface_light_offset_45_degrees(self):
         m = Material()
-        position = Point(0,0,0)
-        eyev = Vector(0,0,-1)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,10,-10), Color(1,1,1))
+        position = Point(0, 0, 0)
+        eyev = Vector(0, 0, -1)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 10, -10), Color(1, 1, 1))
         result = lighting(m, light, position, eyev, normalv)
         self.assertEqual(result, Color(0.7364, 0.7364, 0.7364))
 
     def test_lighting_with_eye_in_path_of_the_reflection_vector(self):
         m = Material()
-        position = Point(0,0,0)
-        eyev = Vector(0,-math.sqrt(2)/2,-math.sqrt(2)/2)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,10,-10), Color(1,1,1))
+        position = Point(0, 0, 0)
+        eyev = Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 10, -10), Color(1, 1, 1))
         result = lighting(m, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.6364, 1.6364, 1.6364))
 
     def test_lighting_with_light_behind_the_surface(self):
         m = Material()
-        position = Point(0,0,0)
-        eyev = Vector(0,0,-1)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,0,10), Color(1,1,1))
+        position = Point(0, 0, 0)
+        eyev = Vector(0, 0, -1)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 0, 10), Color(1, 1, 1))
         result = lighting(m, light, position, eyev, normalv)
         # print(result)
         self.assertEqual(result, Color(0.1, 0.1, 0.1))
@@ -932,9 +932,9 @@ class TestRayMath(unittest.TestCase):
     def test_intersect_a_world_with_a_ray(self):
         w = default_world()
 
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
 
-        xs = intersect_world(w,r)
+        xs = intersect_world(w, r)
 
         self.assertEqual(len(xs), 4)
         self.assertEqual(xs[0].t, 4)
@@ -943,70 +943,70 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(xs[3].t, 6)
 
     def test_precomute_state_of_an_intersection(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
         i = Intersection(4, s)
 
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
         self.assertEqual(comps.t, i.t)
         self.assertEqual(comps.object, i.s_object)
-        self.assertEqual(comps.point, Point(0,0,-1))
-        self.assertEqual(comps.eyev, Vector(0,0,-1))
-        self.assertEqual(comps.normalv, Vector(0,0,-1))
+        self.assertEqual(comps.point, Point(0, 0, -1))
+        self.assertEqual(comps.eyev, Vector(0, 0, -1))
+        self.assertEqual(comps.normalv, Vector(0, 0, -1))
 
     def test_when_an_intersection_occurs_outside(self):
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
         s = Sphere()
         i = Intersection(4, s)
 
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
         self.assertEqual(comps.inside, False)
 
     def test_when_an_intersection_occurs_inside(self):
-        r = Ray(Point(0,0,0), Vector(0,0,1))
+        r = Ray(Point(0, 0, 0), Vector(0, 0, 1))
         s = Sphere()
         i = Intersection(1, s)
 
-        comps = prepare_computations(i,r)
-        self.assertEqual(comps.point, Point(0,0,1))
-        self.assertEqual(comps.eyev, Vector(0,0,-1))
+        comps = prepare_computations(i, r)
+        self.assertEqual(comps.point, Point(0, 0, 1))
+        self.assertEqual(comps.eyev, Vector(0, 0, -1))
         self.assertEqual(comps.inside, True)
-        self.assertEqual(comps.normalv, Vector(0,0,-1))
+        self.assertEqual(comps.normalv, Vector(0, 0, -1))
 
     def test_shade_an_intersection(self):
         w = default_world()
 
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
 
         shape = w.objects[0]
 
         i = Intersection(4, shape)
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
         c = shade_hit(w, comps)
         self.assertEqual(c, Color(0.38066, 0.47583, 0.2855))
 
     def test_shade_an_intersection_from_the_inside(self):
         w = default_world()
-        w.light = PointLight(Point(0,0.25,0), Color(1,1,1))
-        r = Ray(Point(0,0,0), Vector(0,0,1))
+        w.light = PointLight(Point(0, 0.25, 0), Color(1, 1, 1))
+        r = Ray(Point(0, 0, 0), Vector(0, 0, 1))
 
         shape = w.objects[1]
 
         i = Intersection(0.5, shape)
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
         c = shade_hit(w, comps)
         self.assertEqual(c, Color(0.90498, 0.90498, 0.90498))
 
     def test_color_when_ray_misses(self):
         w = default_world()
-        r = Ray(Point(0,0,-5), Vector(0,1,0))
-        c = color_at(w,r)
-        self.assertEqual(c, Color(0,0,0))
+        r = Ray(Point(0, 0, -5), Vector(0, 1, 0))
+        c = color_at(w, r)
+        self.assertEqual(c, Color(0, 0, 0))
 
     def test_color_when_ray_hit(self):
         w = default_world()
-        r = Ray(Point(0,0,-5), Vector(0,0,1))
-        c = color_at(w,r)
+        r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
+        c = color_at(w, r)
         print(c)
         self.assertEqual(c, Color(0.38066, 0.47583, 0.2855))
 
@@ -1017,46 +1017,46 @@ class TestRayMath(unittest.TestCase):
         inner = w.objects[1]
         inner.material.ambient = 1
         r = Ray(Point(0, 0, 0.75), Vector(0, 0, -1))
-        c = color_at(w,r)
+        c = color_at(w, r)
         self.assertEqual(c, inner.material.color)
 
     def test_transformtion_matrix_for_default_orientation(self):
-        from_param = Point(0,0,0)
-        to_param = Point(0,0,-1)
-        up_param = Vector(0,1,0)
+        from_param = Point(0, 0, 0)
+        to_param = Point(0, 0, -1)
+        up_param = Vector(0, 1, 0)
 
         t = view_transforfmation(from_param, to_param, up_param)
         self.assertEqual(t, Matrix([[1, 0, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]]))
-                    
+                                    [0, 1, 0, 0],
+                                    [0, 0, 1, 0],
+                                    [0, 0, 0, 1]]))
+
     def test_transformtion_matrix_looking_in_positive_z_direction(self):
-        from_param = Point(0,0,0)
-        to_param = Point(0,0,1)
-        up_param = Vector(0,1,0)
+        from_param = Point(0, 0, 0)
+        to_param = Point(0, 0, 1)
+        up_param = Vector(0, 1, 0)
 
         t = view_transforfmation(from_param, to_param, up_param)
-        self.assertEqual(t, scaling(-1,1,-1))
+        self.assertEqual(t, scaling(-1, 1, -1))
 
     def test_transformtion_moves_the_world(self):
-        from_param = Point(0,0,8)
-        to_param = Point(0,0,0)
-        up_param = Vector(0,1,0)
+        from_param = Point(0, 0, 8)
+        to_param = Point(0, 0, 0)
+        up_param = Vector(0, 1, 0)
 
         t = view_transforfmation(from_param, to_param, up_param)
-        self.assertEqual(t, translation(0,0,-8))
+        self.assertEqual(t, translation(0, 0, -8))
 
     def test_arbitrary_view_transformation(self):
-        from_param = Point(1,3,2)
-        to_param = Point(4,-2,8)
-        up_param = Vector(1,1,0)
+        from_param = Point(1, 3, 2)
+        to_param = Point(4, -2, 8)
+        up_param = Vector(1, 1, 0)
 
         t = view_transforfmation(from_param, to_param, up_param)
-        self.assertEqual(t, Matrix([[-0.50709 , 0.50709 , 0.67612 , -2.36643 ],
-                                    [ 0.76772 , 0.60609 , 0.12122 , -2.82843 ],
-                                    [ -0.35857 , 0.59761 , -0.71714 , 0.00000 ],
-                                    [ 0.00000 , 0.00000 , 0.00000 , 1.00000 ]]))
+        self.assertEqual(t, Matrix([[-0.50709, 0.50709, 0.67612, -2.36643],
+                                    [0.76772, 0.60609, 0.12122, -2.82843],
+                                    [-0.35857, 0.59761, -0.71714, 0.00000],
+                                    [0.00000, 0.00000, 0.00000, 1.00000]]))
 
     def test_constructing_a_camera(self):
         hsize = 160
@@ -1069,100 +1069,98 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(c.vsize, 120)
         self.assertEqual(c.field_of_view, math.pi / 2)
         self.assertEqual(c.transform, Matrix([[1, 0, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]]))
+                                              [0, 1, 0, 0],
+                                              [0, 0, 1, 0],
+                                              [0, 0, 0, 1]]))
 
     def test_pixel_size_horizontal_canvas(self):
         c = Camera(200, 125, math.pi / 2)
         self.assertEqual(round(c.pixel_size, 2), 0.01)
-    
+
     def test_pixel_size_vertical_canvas(self):
         c = Camera(125, 200, math.pi / 2)
         self.assertEqual(round(c.pixel_size, 2), 0.01)
 
     def test_construct_ray_through_center_of_canvas(self):
-        c = Camera(201, 101, math.pi /2)
+        c = Camera(201, 101, math.pi / 2)
         r = ray_for_pixel(c, 100, 50)
-        self.assertEqual(r.origin, Point(0,0,0))
-        self.assertEqual(r.direction, Vector(0,0,-1))
+        self.assertEqual(r.origin, Point(0, 0, 0))
+        self.assertEqual(r.direction, Vector(0, 0, -1))
 
     def test_construct_ray_through_corner_of_canvas(self):
-        c = Camera(201, 101, math.pi /2)
+        c = Camera(201, 101, math.pi / 2)
         r = ray_for_pixel(c, 0, 0)
-        self.assertEqual(r.origin, Point(0,0,0))
+        self.assertEqual(r.origin, Point(0, 0, 0))
         self.assertEqual(r.direction, Vector(0.66519, 0.33259, -0.66851))
 
     def test_construct_ray_when_the_camera_is_transformed(self):
-        c = Camera(201, 101, math.pi/2)
-        c.transform = TransformationBuilder().rotate_y(math.pi/4).translate(0, -2, 5).build()
+        c = Camera(201, 101, math.pi / 2)
+        c.transform = TransformationBuilder().rotate_y(math.pi / 4).translate(0, -2, 5).build()
         # c.transform = TransformationBuilder().translate(0, -2, 5).rotate_y(math.pi/4).build()
         r = ray_for_pixel(c, 100, 50)
         # print(r.origin)
-        self.assertEqual(r.origin, Point(0,2,-5))
-        self.assertEqual(r.direction, Vector(math.sqrt(2)/2, 0, -math.sqrt(2)/2))
-    
+        self.assertEqual(r.origin, Point(0, 2, -5))
+        self.assertEqual(r.direction, Vector(math.sqrt(2) / 2, 0, -math.sqrt(2) / 2))
+
     def test_rendering_a_world_with_a_camera(self):
         w = default_world()
-        c = Camera(11,11, math.pi/2)
-        from_vector = Point(0,0,-5)
-        to_vector = Point(0,0,0)
-        up_vector = Vector(0,1,0)
+        c = Camera(11, 11, math.pi / 2)
+        from_vector = Point(0, 0, -5)
+        to_vector = Point(0, 0, 0)
+        up_vector = Vector(0, 1, 0)
 
         c.transform = view_transforfmation(from_vector, to_vector, up_vector)
 
-        image = render(c,w)
-        self.assertEqual(pixel_at(image,5,5), Color(0.38066, 0.47583, 0.2855))
-
+        image = render(c, w)
+        self.assertEqual(pixel_at(image, 5, 5), Color(0.38066, 0.47583, 0.2855))
 
     def test_lighting_with_the_surface_in_shadow(self):
-        eyev = Vector(0,0-1)
-        normalv = Vector(0,0,-1)
-        light = PointLight(Point(0,0,-10), Color(1,1,1))
+        eyev = Vector(0, 0 - 1)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
         in_shadow = True
         m = Material()
-        position = Point(0,0,0)
+        position = Point(0, 0, 0)
         result = lighting(m, light, position, eyev, normalv, in_shadow)
-        self.assertEqual(result, Color(0.1,0.1,0.1))
+        self.assertEqual(result, Color(0.1, 0.1, 0.1))
 
     def test_no_shadow_when_nothing_is_collinear_with_point_and_light(self):
         w = default_world()
-        p = Point(0,10,0)
-        self.assertEqual(is_shadowed(w,p), False)
+        p = Point(0, 10, 0)
+        self.assertEqual(is_shadowed(w, p), False)
 
     def test_shadow_when_an_object_between_the_point_and_the_light(self):
         w = default_world()
-        p = Point(10,-10,10)
-        self.assertEqual(is_shadowed(w,p), True)
+        p = Point(10, -10, 10)
+        self.assertEqual(is_shadowed(w, p), True)
 
     def test_no_shadow_when_object_is_behing_the_light(self):
         w = default_world()
-        p = Point(-20,20,-20)
-        self.assertEqual(is_shadowed(w,p), False)
+        p = Point(-20, 20, -20)
+        self.assertEqual(is_shadowed(w, p), False)
 
     def test_no_shadow__when_object_is_behind_the_point(self):
         w = default_world()
-        p = Point(-2,2,-2)
-        self.assertEqual(is_shadowed(w,p), False)
-
+        p = Point(-2, 2, -2)
+        self.assertEqual(is_shadowed(w, p), False)
 
     def test_shade_hit_is_given_an_intersection_in_shadow(self):
         w = World()
-        w.light = PointLight(Point(0,0,-10), Color(1,1,1))
+        w.light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
 
         s1 = Sphere()
 
         w.objects.append(s1)
 
         s2 = Sphere()
-        s2.transform = translation(0,0,10)
+        s2.transform = translation(0, 0, 10)
 
         w.objects.append(s2)
 
-        r = Ray(Point(0,0,5), Vector(0,0,1))
+        r = Ray(Point(0, 0, 5), Vector(0, 0, 1))
         i = Intersection(4, s2)
 
-        comps = prepare_computations(i,r)
+        comps = prepare_computations(i, r)
 
         c = shade_hit(w, comps)
 
@@ -1180,6 +1178,7 @@ class TestRayMath(unittest.TestCase):
 
     #     self.assertEqual(comps.over_point.tuple.z < -EPSILON/2, True)
     #     self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
+
 
 if __name__ == '__main__':
     unittest.main()

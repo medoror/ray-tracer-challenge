@@ -1,12 +1,13 @@
 import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
-Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
-Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
-PointLight, position, normal_at, view_transforfmation, World, Camera, render
+    Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
+    Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
+    PointLight, position, normal_at, view_transforfmation, World, Camera, render
 
-# Run: python3 main.py 
+
+# Run: python3 main.py
 class Projectile:
-    def __init__(self, pos=Point(), vel=Vector()): 
+    def __init__(self, pos=Point(), vel=Vector()):
         self.position = pos
         self.velocity = vel
 
@@ -38,6 +39,7 @@ def basic_projectile():
 def convert_to_pixel_space(raw_coord):
     return int(raw_coord)
 
+
 def outside_of_canvas(canvas, pos_x, pos_y):
     if pos_x < 0 or pos_x > canvas.width:
         return True
@@ -67,6 +69,7 @@ def ppm_projectile():
 
     canvas_to_ppm(c)
 
+
 def clock():
     # orientation: from book (looking down the -y axis)
     # 12 hour mark- Point(0,0,1)
@@ -76,20 +79,23 @@ def clock():
 
     square_dimension = 900
     c = Canvas(square_dimension, square_dimension)
-    point_color = Color(0,1,0) # green
+    point_color = Color(0, 1, 0)  # green
     # Move each point from the middle. We scale here to spread the points a part from one another
-    middle_of_canvas_matrix = TransformationBuilder().scale(80, 0, 80).translate(square_dimension / 2, 0, square_dimension / 2).build()
+    middle_of_canvas_matrix = TransformationBuilder().scale(80, 0, 80).translate(square_dimension / 2, 0,
+                                                                                 square_dimension / 2).build()
 
-    twelve = Point(0,0,1)
+    twelve = Point(0, 0, 1)
 
-    for interval in range(0,12):
+    for interval in range(0, 12):
         r = rotation_y(interval * (math.pi / 6))
         hour_mark = r * twelve
         translated_point = middle_of_canvas_matrix * hour_mark
         print(translated_point)
-        write_pixel(c, convert_to_pixel_space(translated_point.tuple.x), convert_to_pixel_space(translated_point.tuple.z), point_color)
+        write_pixel(c, convert_to_pixel_space(translated_point.tuple.x),
+                    convert_to_pixel_space(translated_point.tuple.z), point_color)
 
     canvas_to_ppm(c)
+
 
 def ray_cast_sphere_lighting():
     canvas_pixels = 500
@@ -99,12 +105,12 @@ def ray_cast_sphere_lighting():
     sphere.material.color = Color(1, 0.2, 1)
     sphere.transform = shearing(1, 0, 0, 0, 0, 0) * scaling(0.5, 1, 1)
 
-    #light source
+    # light source
     light_position = Point(-10, 10, -10)
-    light_color = Color(1,1,1)
+    light_color = Color(1, 1, 1)
     light = PointLight(light_position, light_color)
 
-    ray_origin = Point(0,0,-5)
+    ray_origin = Point(0, 0, -5)
     wall_z = 10
     wall_size = 7.0
 
@@ -113,11 +119,11 @@ def ray_cast_sphere_lighting():
     half = wall_size / 2
 
     # for each row of pixels in the canvas
-    for y in range(canvas_pixels-1):
+    for y in range(canvas_pixels - 1):
         world_y = half - pixel_size * y
 
         # for each pixel in the row
-        for x in range(canvas_pixels-1):
+        for x in range(canvas_pixels - 1):
             # compute the world x coordinate
             world_x = -half + pixel_size * x
             # describe the point on the wall that the ray will target
@@ -126,7 +132,7 @@ def ray_cast_sphere_lighting():
             xs = intersect(sphere, r)
 
             if hit(xs):
-                point = position(r, xs[0].t) # todo: this intersection should be the closest
+                point = position(r, xs[0].t)  # todo: this intersection should be the closest
                 normal = normal_at(xs[0].s_object, point)
                 eye = -r.direction
                 color = lighting(xs[0].s_object.material, light, point, eye, normal)
@@ -134,10 +140,11 @@ def ray_cast_sphere_lighting():
 
     canvas_to_ppm(canvas)
 
+
 def ray_cast_sphere():
     canvas_pixels = 100
     canvas = Canvas(canvas_pixels, canvas_pixels)
-    color = Color(1,0,0)
+    color = Color(1, 0, 0)
     shape = Sphere()
     # shrink it along the y axis
     # shape.transform = scaling(1, 0.5, 1)
@@ -148,10 +155,10 @@ def ray_cast_sphere():
     # shrink it, and rotate it!
     # shape.transform = rotation_z(math.pi / 4) * scaling(0.5,1,1)
 
-    #shrink it, and skew it!
+    # shrink it, and skew it!
     shape.transform = shearing(1, 0, 0, 0, 0, 0) * scaling(0.5, 1, 1)
 
-    ray_origin = Point(0,0,-5)
+    ray_origin = Point(0, 0, -5)
     wall_z = 10
     wall_size = 7.0
 
@@ -160,11 +167,11 @@ def ray_cast_sphere():
     half = wall_size / 2
 
     # for each row of pixels in the canvas
-    for y in range(canvas_pixels-1):
+    for y in range(canvas_pixels - 1):
         world_y = half - pixel_size * y
 
         # for each pixel in the row
-        for x in range(canvas_pixels-1):
+        for x in range(canvas_pixels - 1):
             # compute the world x coordinate
             world_x = -half + pixel_size * x
             # describe the point on the wall that the ray will target
@@ -177,9 +184,10 @@ def ray_cast_sphere():
 
     canvas_to_ppm(canvas)
 
+
 def create_scene():
     world = World()
-    world.light = PointLight(Point(-10,10,-10), Color(1,1,1))
+    world.light = PointLight(Point(-10, 10, -10), Color(1, 1, 1))
 
     floor = Sphere()
     floor.transform = scaling(10, 0.01, 10)
@@ -189,17 +197,17 @@ def create_scene():
     world.objects.append(floor)
 
     left_wall = Sphere()
-    left_wall.transform = TransformationBuilder().translate(0,0,5).rotate_y(-math.pi/4).rotate_x(math.pi/2).scale(10,0.01,10).build()
+    left_wall.transform = TransformationBuilder().translate(0, 0, 5).rotate_y(-math.pi / 4).rotate_x(math.pi / 2).scale(
+        10, 0.01, 10).build()
     # left_wall.transform = TransformationBuilder().scale(10,0.01,10).rotate_x(math.pi/2).rotate_y(-math.pi/4).translate(0,0,5).build()
     left_wall.material = floor.material
     world.objects.append(left_wall)
 
-
     right_wall = Sphere()
-    right_wall.transform = TransformationBuilder().translate(0,0,5).rotate_y(math.pi/4).rotate_x(math.pi/2).scale(10,0.01,10).build()
+    right_wall.transform = TransformationBuilder().translate(0, 0, 5).rotate_y(math.pi / 4).rotate_x(math.pi / 2).scale(
+        10, 0.01, 10).build()
     right_wall.material = floor.material
     world.objects.append(right_wall)
-
 
     middle = Sphere()
     middle.transform = translation(-0.5, 1, 0.5)
@@ -217,7 +225,6 @@ def create_scene():
     right.material.specular = 0.3
     world.objects.append(right)
 
-
     left = Sphere()
     left.transform = translation(-1.5, 0.33, -0.75) * scaling(0.33, 0.33, 0.33)
     left.material = Material()
@@ -226,13 +233,14 @@ def create_scene():
     left.material.specular = 0.3
     world.objects.append(left)
 
+    camera = Camera(100, 50, math.pi / 2)
 
-    camera = Camera(100, 50, math.pi/2)
+    camera.transform = view_transforfmation(Point(-5, 1.5, -5), Point(0, 1, 0), Vector(0, 1, 0))
 
-    camera.transform = view_transforfmation(Point(-5,1.5,-5), Point(0,1,0), Vector(0,1,0))
-    
     canvas = render(camera, world)
     canvas_to_ppm(canvas)
+
+
 if __name__ == '__main__':
     # basic_projectile()
     # ppm_projectile()
