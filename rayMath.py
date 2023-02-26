@@ -1,8 +1,6 @@
 import math
 from math import sqrt, fabs, ceil
-
 import sys
-
 import copy
 
 TUPLE_EPSILON = 0.0001
@@ -515,7 +513,7 @@ def inverse(matrix):
 
     rows = len(matrix)
     columns = len(matrix[0])
-    determinantValue = determinant(matrix)
+    determinant_value = determinant(matrix)
     return_matrix = generate_zero_matrix(rows)
 
     for row in range(rows):
@@ -523,7 +521,7 @@ def inverse(matrix):
             c = cofactor(matrix, row, col)
             # the book used floating point nums to 5 decimals.  I dont think we care here
             # so the rounding should be dropped. Work towards have a better equals method
-            return_matrix[col][row] = c / determinantValue
+            return_matrix[col][row] = c / determinant_value
 
     return return_matrix
 
@@ -685,7 +683,7 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
     # compute the ambient contribution
     ambient = effective_color * material.ambient
 
-    if (in_shadow):
+    if in_shadow:
         return ambient
 
     # light_dot_normal represents the cosine of the angle between the light_vector
@@ -767,7 +765,7 @@ def color_at(world, ray):
     xs = intersect_world(world, ray)
 
     possible_intersection = hit(xs)
-    if possible_intersection == None:
+    if possible_intersection is None:
         return Color(0, 0, 0)
     else:
         comps = prepare_computations(possible_intersection, ray)

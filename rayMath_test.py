@@ -1120,8 +1120,8 @@ class TestRayMath(unittest.TestCase):
         light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
         in_shadow = True
         m = Material()
-        position = Point(0, 0, 0)
-        result = lighting(m, light, position, eyev, normalv, in_shadow)
+        p = Point(0, 0, 0)
+        result = lighting(m, light, p, eyev, normalv, in_shadow)
         self.assertEqual(result, Color(0.1, 0.1, 0.1))
 
     def test_no_shadow_when_nothing_is_collinear_with_point_and_light(self):
