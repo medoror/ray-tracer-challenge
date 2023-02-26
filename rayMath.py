@@ -752,6 +752,7 @@ def prepare_computations(intersection, ray):
         comps.normalv = -comps.normalv
         comps.over_point = comps.point + comps.normalv * EPSILON
     else:
+        comps.over_point = comps.point + comps.normalv * EPSILON
         comps.inside = False
     return comps
 
