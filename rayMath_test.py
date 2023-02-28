@@ -7,7 +7,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
     minor, cofactor, inverse, translation, scaling, rotation_x, \
     rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
-    position, Sphere, intersect, Intersection, intersections, hit, \
+    position_along_ray, Sphere, intersect, Intersection, intersections, hit, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
@@ -642,10 +642,10 @@ class TestRayMath(unittest.TestCase):
 
     def test_computing_point_from_distance(self):
         r = Ray(Point(2, 3, 4), Vector(1, 0, 0))
-        self.assertEqual(position(r, 0), Point(2, 3, 4))
-        self.assertEqual(position(r, 1), Point(3, 3, 4))
-        self.assertEqual(position(r, -1), Point(1, 3, 4))
-        self.assertEqual(position(r, 2.5), Point(4.5, 3, 4))
+        self.assertEqual(position_along_ray(r, 0), Point(2, 3, 4))
+        self.assertEqual(position_along_ray(r, 1), Point(3, 3, 4))
+        self.assertEqual(position_along_ray(r, -1), Point(1, 3, 4))
+        self.assertEqual(position_along_ray(r, 2.5), Point(4.5, 3, 4))
 
     def test_ray_intersects_a_sphere_at_two_points(self):
         r = Ray(Point(0, 0, -5), Vector(0, 0, 1))

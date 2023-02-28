@@ -2,7 +2,7 @@ import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
     Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
     Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
-    PointLight, position, normal_at, view_transforfmation, World, Camera, render
+    PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render
 
 
 # Run: python3 main.py
@@ -132,7 +132,7 @@ def ray_cast_sphere_lighting():
             xs = intersect(sphere, r)
 
             if hit(xs):
-                point = position(r, xs[0].t)  # todo: this intersection should be the closest
+                point = position_along_ray(r, xs[0].t)  # todo: this intersection should be the closest
                 normal = normal_at(xs[0].s_object, point)
                 eye = -r.direction
                 color = lighting(xs[0].s_object.material, light, point, eye, normal)

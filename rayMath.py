@@ -87,7 +87,7 @@ class PrepareComputations:
     def __init__(self, intersection, ray):
         self.t = intersection.t
         self.object = intersection.s_object
-        self.point = position(ray, self.t)
+        self.point = position_along_ray(ray, self.t)
         self.eyev = -ray.direction
         self.normalv = normal_at(self.object, self.point)
         self.over_point = Point(0, 0, 0)
@@ -660,7 +660,7 @@ def shearing(xy, xz, yx, yz, zx, zy):
 
 
 # todo: change this name maybe position_along_ray?
-def position(ray, t):
+def position_along_ray(ray, t):
     return ray.origin + ray.direction * t
 
 
