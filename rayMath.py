@@ -30,17 +30,30 @@ class Shape(ABC):
     def local_intersect(self, ray):
         pass
 
+    @abstractmethod
+    def local_normal_at(self, point):
+        pass
+
+
 class TestShape(Shape):
     def __init__(self):
         super().__init__()
         self.saved_ray = Ray(Point(0, 0, 0), Vector(0, 0, 0))
 
+    def local_normal_at(self, point):
+        return Vector(point.tuple.x, point.tuple.y, point.tuple.z)
+
     def local_intersect(self, ray):
         self.saved_ray = ray
+
+
 @auto_str
 class Sphere(Shape):
     def __init__(self):
         super().__init__()
+
+    def local_normal_at(self, point):
+        return point - Point(0, 0, 0)
 
     def local_intersect(self, ray):
         sphere_to_ray = ray.origin - Point(0, 0, 0)  # unit circle for now
@@ -58,6 +71,7 @@ class Sphere(Shape):
         t2 = (-b + math.sqrt(discriminant)) / (2 * a)
 
         return [Intersection(t1, self), Intersection(t2, self)]
+
 
 @auto_str
 class Camera:
@@ -659,28 +673,9 @@ def shearing(xy, xz, yx, yz, zx, zy):
                    [0, 0, 0, 1]])
 
 
-# todo: change this name maybe position_along_ray?
 def position_along_ray(ray, t):
     return ray.origin + ray.direction * t
 
-
-# def intersect(sphere, ray):
-#     transformed_ray = transform(ray, inverse(sphere.transform))
-#     sphere_to_ray = transformed_ray.origin - Point(0, 0, 0)  # unit circle for now
-#     a = dot(transformed_ray.direction, transformed_ray.direction)
-#     b = 2 * dot(transformed_ray.direction, sphere_to_ray)
-#     c = dot(sphere_to_ray, sphere_to_ray) - 1
-#
-#     discriminant = b * b - 4 * a * c
-#     # print("discriminant: {0}".format(discriminant))
-#
-#     if discriminant < 0:
-#         return []
-#
-#     t1 = (-b - math.sqrt(discriminant)) / (2 * a)
-#     t2 = (-b + math.sqrt(discriminant)) / (2 * a)
-#
-#     return [Intersection(t1, sphere), Intersection(t2, sphere)]
 
 def intersect(shape, ray):
     local_ray = transform(ray, inverse(shape.transform))
@@ -708,11 +703,10 @@ def transform(ray, matrix):
 def set_transform(sphere, translation):
     sphere.transform = translation
 
-
-def normal_at(sphere, world_point):
-    object_point = inverse(sphere.transform) * world_point
-    object_normal = object_point - Point(0, 0, 0)
-    world_normal = transpose(inverse(sphere.transform)) * object_normal
+def normal_at(shape, world_point):
+    local_point = inverse(shape.transform) * world_point
+    local_normal = shape.local_normal_at(local_point)
+    world_normal = transpose(inverse(shape.transform)) * local_normal
     world_normal.tuple.w = 0
     return normalize(world_normal)
 

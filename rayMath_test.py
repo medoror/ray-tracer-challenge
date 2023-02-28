@@ -11,7 +11,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
-    is_shadowed, EPSILON, test_shape
+    is_shadowed, EPSILON, test_shape, Shape
 from math import sqrt
 
 
@@ -850,14 +850,26 @@ class TestRayMath(unittest.TestCase):
         n = normal_at(s, Point(sqrt(3) / 3, sqrt(3) / 3, sqrt(3) / 3))
         self.assertEqual(n, normalize(n))
 
-    def test_compute_normal_on_translated_sphere(self):
-        s = Sphere()
+    # def test_compute_normal_on_translated_sphere(self):
+    #     s = Sphere()
+    #     set_transform(s, translation(0, 1, 0))
+    #     n = normal_at(s, Point(0, 1.70711, -0.70711))
+    #     self.assertEqual(n, Vector(0, 0.70711, -0.70711))
+
+    def test_compute_normal_on_translated_shape(self):
+        s = test_shape()
         set_transform(s, translation(0, 1, 0))
         n = normal_at(s, Point(0, 1.70711, -0.70711))
         self.assertEqual(n, Vector(0, 0.70711, -0.70711))
+    # def test_compute_normal_on_transformed_sphere(self):
+    #     s = Sphere()
+    #     m = scaling(1, 0.5, 1) * rotation_z(math.pi / 5)
+    #     set_transform(s, m)
+    #     n = normal_at(s, Point(0, math.sqrt(2) / 2, -math.sqrt(2) / 2))
+    #     self.assertEqual(n, Vector(0, 0.97014, -0.24254))
 
-    def test_compute_normal_on_transformed_sphere(self):
-        s = Sphere()
+    def test_compute_normal_on_transformed_shape(self):
+        s = test_shape()
         m = scaling(1, 0.5, 1) * rotation_z(math.pi / 5)
         set_transform(s, m)
         n = normal_at(s, Point(0, math.sqrt(2) / 2, -math.sqrt(2) / 2))
@@ -1217,6 +1229,7 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(comps.over_point.tuple.z < -EPSILON / 2, True)
         self.assertEqual(comps.point.tuple.z > comps.over_point.tuple.z, True)
 
-
+    def test_is_sphere_a_shape(self):
+        self.assertTrue(issubclass(Sphere, Shape))
 if __name__ == '__main__':
     unittest.main()
