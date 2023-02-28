@@ -11,7 +11,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
-    is_shadowed, EPSILON
+    is_shadowed, EPSILON, test_shape
 from math import sqrt
 
 
@@ -765,35 +765,65 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(r2.origin, Point(2, 6, 12))
         self.assertEqual(r2.direction, Vector(0, 3, 0))
 
-    def test_sphere_default_transformation(self):
-        s = Sphere()
+    # def test_sphere_default_transformation(self):
+    #     s = Sphere()
+    #     identity_matrix = Matrix([[1, 0, 0, 0],
+    #                               [0, 1, 0, 0],
+    #                               [0, 0, 1, 0],
+    #                               [0, 0, 0, 1]])
+    #     self.assertEqual(s.transform, identity_matrix)
+
+    def test_shape_default_transformation(self):
+        s = test_shape()
         identity_matrix = Matrix([[1, 0, 0, 0],
                                   [0, 1, 0, 0],
                                   [0, 0, 1, 0],
                                   [0, 0, 0, 1]])
         self.assertEqual(s.transform, identity_matrix)
 
-    def test_change_sphere_transformation(self):
-        s = Sphere()
+    # def test_change_sphere_transformation(self):
+    #     s = Sphere()
+    #     t = translation(2, 3, 4)
+    #     set_transform(s, t)
+    #     self.assertEqual(s.transform, t)
+
+    def test_change_shape_transformation(self):
+        s = test_shape()
         t = translation(2, 3, 4)
         set_transform(s, t)
         self.assertEqual(s.transform, t)
 
-    def test_intersecting_a_scaled_sphere_with_a_ray(self):
+    # def test_intersecting_a_scaled_sphere_with_a_ray(self):
+    #     r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
+    #     s = Sphere()
+    #     set_transform(s, scaling(2, 2, 2))
+    #     xs = intersect(s, r)
+    #     self.assertEqual(len(xs), 2)
+    #     self.assertEqual(xs[0].t, 3)
+    #     self.assertEqual(xs[1].t, 7)
+
+    def test_intersecting_a_scaled_shape_with_a_ray(self):
         r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
-        s = Sphere()
+        s = test_shape()
         set_transform(s, scaling(2, 2, 2))
         xs = intersect(s, r)
-        self.assertEqual(len(xs), 2)
-        self.assertEqual(xs[0].t, 3)
-        self.assertEqual(xs[1].t, 7)
+        self.assertEqual(s.saved_ray.origin, Point(0, 0, -2.5))
+        self.assertEqual(s.saved_ray.direction, Vector(0, 0, 0.5))
 
-    def test_intersecting_a_translated_sphere_with_a_ray(self):
+    # def test_intersecting_a_translated_sphere_with_a_ray(self):
+    #     r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
+    #     s = Sphere()
+    #     set_transform(s, translation(5, 0, 0))
+    #     xs = intersect(s, r)
+    #     self.assertEqual(len(xs), 0)
+
+    def test_intersecting_a_translated_shape_with_a_ray(self):
         r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
-        s = Sphere()
+        s = test_shape()
         set_transform(s, translation(5, 0, 0))
         xs = intersect(s, r)
-        self.assertEqual(len(xs), 0)
+        self.assertEqual(s.saved_ray.origin, Point(-5, 0, -5))
+        self.assertEqual(s.saved_ray.direction, Vector(0, 0, 1))
 
     def test_normal_on_a_sphere_at_a_point_on_the_x_axis(self):
         s = Sphere()
@@ -860,13 +890,25 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(m.specular, 0.9)
         self.assertEqual(m.shininess, 200.0)
 
-    def test_sphere_has_default_material(self):
-        s = Sphere()
+    # def test_sphere_has_default_material(self):
+    #     s = Sphere()
+    #     m = s.material
+    #     self.assertEqual(m, Material())
+
+    def test_shape_has_default_material(self):
+        s = test_shape()
         m = s.material
         self.assertEqual(m, Material())
 
-    def test_sphere_may_be_assigned_a_material(self):
-        s = Sphere()
+    # def test_sphere_may_be_assigned_a_material(self):
+    #     s = Sphere()
+    #     m = Material()
+    #     m.ambient = 1
+    #     s.material = m
+    #     self.assertEqual(s.material, m)
+
+    def test_shape_may_be_assigned_a_material(self):
+        s = test_shape()
         m = Material()
         m.ambient = 1
         s.material = m

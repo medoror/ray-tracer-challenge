@@ -2,6 +2,7 @@ import math
 from math import sqrt, fabs, ceil
 import sys
 import copy
+from abc import ABC, abstractmethod
 
 EPSILON = 0.0001
 MATRIX_EPSILON = 0.01
@@ -15,6 +16,48 @@ def auto_str(cls):
     cls.__str__ = __str__
     return cls
 
+
+class Shape(ABC):
+    def __init__(self):
+        self.transform = Matrix([[1, 0, 0, 0],
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]])
+
+        self.material = Material()
+
+    @abstractmethod
+    def local_intersect(self, ray):
+        pass
+
+class TestShape(Shape):
+    def __init__(self):
+        super().__init__()
+        self.saved_ray = Ray(Point(0, 0, 0), Vector(0, 0, 0))
+
+    def local_intersect(self, ray):
+        self.saved_ray = ray
+@auto_str
+class Sphere(Shape):
+    def __init__(self):
+        super().__init__()
+
+    def local_intersect(self, ray):
+        sphere_to_ray = ray.origin - Point(0, 0, 0)  # unit circle for now
+        a = dot(ray.direction, ray.direction)
+        b = 2 * dot(ray.direction, sphere_to_ray)
+        c = dot(sphere_to_ray, sphere_to_ray) - 1
+
+        discriminant = b * b - 4 * a * c
+        # print("discriminant: {0}".format(discriminant))
+
+        if discriminant < 0:
+            return []
+
+        t1 = (-b - math.sqrt(discriminant)) / (2 * a)
+        t2 = (-b + math.sqrt(discriminant)) / (2 * a)
+
+        return [Intersection(t1, self), Intersection(t2, self)]
 
 @auto_str
 class Camera:
@@ -92,15 +135,15 @@ class Intersection:
         self.s_object = s_object  # s_object -> x_object??
 
 
-@auto_str
-class Sphere:
-    def __init__(self):
-        self.transform = Matrix([[1, 0, 0, 0],
-                                 [0, 1, 0, 0],
-                                 [0, 0, 1, 0],
-                                 [0, 0, 0, 1]])
-
-        self.material = Material()
+# @auto_str
+# class Sphere:
+#     def __init__(self):
+#         self.transform = Matrix([[1, 0, 0, 0],
+#                                  [0, 1, 0, 0],
+#                                  [0, 0, 1, 0],
+#                                  [0, 0, 0, 1]])
+#
+#         self.material = Material()
 
 
 @auto_str
@@ -621,23 +664,27 @@ def position(ray, t):
     return ray.origin + ray.direction * t
 
 
-def intersect(sphere, ray):
-    transformed_ray = transform(ray, inverse(sphere.transform))
-    sphere_to_ray = transformed_ray.origin - Point(0, 0, 0)  # unit circle for now
-    a = dot(transformed_ray.direction, transformed_ray.direction)
-    b = 2 * dot(transformed_ray.direction, sphere_to_ray)
-    c = dot(sphere_to_ray, sphere_to_ray) - 1
+# def intersect(sphere, ray):
+#     transformed_ray = transform(ray, inverse(sphere.transform))
+#     sphere_to_ray = transformed_ray.origin - Point(0, 0, 0)  # unit circle for now
+#     a = dot(transformed_ray.direction, transformed_ray.direction)
+#     b = 2 * dot(transformed_ray.direction, sphere_to_ray)
+#     c = dot(sphere_to_ray, sphere_to_ray) - 1
+#
+#     discriminant = b * b - 4 * a * c
+#     # print("discriminant: {0}".format(discriminant))
+#
+#     if discriminant < 0:
+#         return []
+#
+#     t1 = (-b - math.sqrt(discriminant)) / (2 * a)
+#     t2 = (-b + math.sqrt(discriminant)) / (2 * a)
+#
+#     return [Intersection(t1, sphere), Intersection(t2, sphere)]
 
-    discriminant = b * b - 4 * a * c
-    # print("discriminant: {0}".format(discriminant))
-
-    if discriminant < 0:
-        return []
-
-    t1 = (-b - math.sqrt(discriminant)) / (2 * a)
-    t2 = (-b + math.sqrt(discriminant)) / (2 * a)
-
-    return [Intersection(t1, sphere), Intersection(t2, sphere)]
+def intersect(shape, ray):
+    local_ray = transform(ray, inverse(shape.transform))
+    return shape.local_intersect(local_ray)
 
 
 def intersections(*intersections):
@@ -838,3 +885,7 @@ def is_shadowed(world, point):
         return True
     else:
         return False
+
+
+def test_shape():
+    return TestShape()
