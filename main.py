@@ -2,7 +2,7 @@ import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
     Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
     Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
-    PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render
+    PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render, Plane
 
 
 # Run: python3 main.py
@@ -255,7 +255,6 @@ def create_shaded_scene():
     left_wall = Sphere()
     left_wall.transform = TransformationBuilder().translate(0, 0, 5).rotate_y(-math.pi / 4).rotate_x(math.pi / 2).scale(
         10, 0.01, 10).build()
-    # left_wall.transform = TransformationBuilder().scale(10,0.01,10).rotate_x(math.pi/2).rotate_y(-math.pi/4).translate(0,0,5).build()
     left_wall.material = floor.material
     world.objects.append(left_wall)
 
@@ -297,6 +296,62 @@ def create_shaded_scene():
     canvas_to_ppm(canvas)
 
 
+def create_plane_scene():
+    world = World()
+    world.light = PointLight(Point(-10, 10, -10), Color(1, 1, 1))
+
+    floor = Plane()
+    floor.material = Material()
+    floor.material.color = Color(1, 0.9, 0.9)
+    floor.material.specular = 0
+    world.objects.append(floor)
+
+    backdrop = Plane()
+    backdrop.transform = TransformationBuilder().rotate_x(math.pi / 2).build()
+    backdrop.material = Material()
+    backdrop.material.color = Color(1, 0.9, 0.9)
+    backdrop.material.specular = 0
+    world.objects.append(backdrop)
+
+    left_wall = Plane()
+    left_wall.transform = TransformationBuilder().translate(10, 0, 0).rotate_z(math.pi / 2).build()
+    left_wall.material = Material()
+    left_wall.material.color = Color(1, 0.9, 0.9)
+    left_wall.material.specular = 0
+    world.objects.append(left_wall)
+
+    middle = Sphere()
+    middle.transform = TransformationBuilder().translate(-0.5, 1, 0.5).build()
+    middle.material = Material()
+    middle.material.color = Color(0.1, 1, 0.5)
+    middle.material.diffuse = 0.7
+    middle.material.specular = 0.3
+    world.objects.append(middle)
+
+    right = Sphere()
+    right.transform = translation(1.5, 0.5, -0.5) * scaling(0.5, 0.5, 0.5)
+    right.material = Material()
+    right.material.color = Color(0.5, 1, 0.1)
+    right.material.diffuse = 0.7
+    right.material.specular = 0.3
+    world.objects.append(right)
+
+    left = Sphere()
+    left.transform = translation(-1.5, 0.33, -0.75) * scaling(0.33, 0.33, 0.33)
+    left.material = Material()
+    left.material.color = Color(1, 0.8, 0.1)
+    left.material.diffuse = 0.7
+    left.material.specular = 0.3
+    world.objects.append(left)
+
+    camera = Camera(100, 50, math.pi / 3)
+
+    camera.transform = view_transforfmation(Point(0, 1.5, -5), Point(0, 1, 0), Vector(0, 1, 0))
+
+    canvas = render(camera, world)
+    canvas_to_ppm(canvas)
+
+
 if __name__ == '__main__':
     # basic_projectile()
     # ppm_projectile()
@@ -304,4 +359,5 @@ if __name__ == '__main__':
     # ray_cast_sphere()
     # ray_cast_sphere_lighting()
     # create_scene()
-    create_shaded_scene()
+    # create_shaded_scene()
+    create_plane_scene()

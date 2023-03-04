@@ -46,6 +46,20 @@ class TestShape(Shape):
     def local_intersect(self, ray):
         self.saved_ray = ray
 
+class Plane(Shape):
+    def __init__(self):
+        super().__init__()
+
+    def local_normal_at(self, point):
+        return Vector(0, 1, 0)
+
+    def local_intersect(self, ray):
+        if math.fabs(ray.direction.tuple.y) < EPSILON:
+            return []
+        t = -ray.origin.tuple.y / ray.direction.tuple.y
+        # intersect_world expect to intersections but plans are a special case and would only have one
+        return [Intersection(t, self), Intersection(sys.maxsize, self)]
+
 
 @auto_str
 class Sphere(Shape):
@@ -147,17 +161,6 @@ class Intersection:
     def __init__(self, distance_t, s_object):
         self.t = distance_t
         self.s_object = s_object  # s_object -> x_object??
-
-
-# @auto_str
-# class Sphere:
-#     def __init__(self):
-#         self.transform = Matrix([[1, 0, 0, 0],
-#                                  [0, 1, 0, 0],
-#                                  [0, 0, 1, 0],
-#                                  [0, 0, 0, 1]])
-#
-#         self.material = Material()
 
 
 @auto_str
@@ -774,8 +777,8 @@ def default_world():
 def intersect_world(world, ray):
     # there has got to be cleaner way to do this
     returned_intersections = []
-    for sphere in world.objects:
-        computed_intersections = intersect(sphere, ray)
+    for shape in world.objects:
+        computed_intersections = intersect(shape, ray)
         if len(computed_intersections) == 0:
             continue
         returned_intersections.append(computed_intersections[0])
@@ -810,10 +813,8 @@ def color_at(world, ray):
         return Color(0, 0, 0)
     else:
         comps = prepare_computations(possible_intersection, ray)
-        # return shade_hit(world, comps)
-        the_color = shade_hit(world, comps)
-        # print("Computed Color {0}".format(the_color))
-        return the_color
+        return shade_hit(world, comps)
+
 
 
 def view_transforfmation(from_vector, to_vector, up_vector):

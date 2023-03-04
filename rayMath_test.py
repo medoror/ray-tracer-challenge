@@ -11,7 +11,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
-    is_shadowed, EPSILON, test_shape, Shape
+    is_shadowed, EPSILON, test_shape, Shape, Plane
 from math import sqrt
 
 
@@ -1177,5 +1177,45 @@ class TestRayMath(unittest.TestCase):
 
     def test_is_sphere_a_shape(self):
         self.assertTrue(issubclass(Sphere, Shape))
+
+    def test_normal_plane_is_constant_everywhere(self):
+        p = Plane()
+        n1 = p.local_normal_at(Point(0, 0, 0))
+        n2 = p.local_normal_at(Point(10, 0, -10))
+        n3 = p.local_normal_at(Point(-5, 0, 150))
+
+        self.assertEqual(n1, Vector(0, 1, 0))
+        self.assertEqual(n2, Vector(0, 1, 0))
+        self.assertEqual(n3, Vector(0, 1, 0))
+
+    def test_intersect_with_ray_parallel_to_plane(self):
+        p = Plane()
+        r = Ray(Point(0, 10, 0), Vector(0, 0, 1))
+        xs = p.local_intersect(r)
+        self.assertEqual(xs, [])
+
+    def test_intersect_with_coplanar_ray(self):
+        p = Plane()
+        r = Ray(Point(0, 0, 0), Vector(0, 0, 1))
+        xs = p.local_intersect(r)
+        self.assertEqual(xs, [])
+
+    def test_ray_intersecting_a_plane_from_above(self):
+        p = Plane()
+        r = Ray(Point(0, 1, 0), Vector(0, -1, 0))
+        xs = p.local_intersect(r)
+        self.assertEqual(len(xs), 1)
+        self.assertEqual(xs[0].t, 1)
+        self.assertEqual(xs[0].s_object, p)
+
+    def test_ray_intersecting_a_plane_from_below(self):
+        p = Plane()
+        r = Ray(Point(0, -1, 0), Vector(0, 1, 0))
+        xs = p.local_intersect(r)
+        self.assertEqual(len(xs), 1)
+        self.assertEqual(xs[0].t, 1)
+        self.assertEqual(xs[0].s_object, p)
+
+
 if __name__ == '__main__':
     unittest.main()
