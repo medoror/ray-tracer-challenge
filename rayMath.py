@@ -57,8 +57,7 @@ class Plane(Shape):
         if math.fabs(ray.direction.tuple.y) < EPSILON:
             return []
         t = -ray.origin.tuple.y / ray.direction.tuple.y
-        # intersect_world expect to intersections but plans are a special case and would only have one
-        return [Intersection(t, self), Intersection(sys.maxsize, self)]
+        return [Intersection(t, self)]
 
 
 @auto_str
@@ -781,8 +780,7 @@ def intersect_world(world, ray):
         computed_intersections = intersect(shape, ray)
         if len(computed_intersections) == 0:
             continue
-        returned_intersections.append(computed_intersections[0])
-        returned_intersections.append(computed_intersections[1])
+        returned_intersections.extend(computed_intersections)
     returned_intersections.sort(key=lambda i: i.t)
     return returned_intersections
 
