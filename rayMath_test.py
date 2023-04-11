@@ -11,7 +11,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     transform, set_transform, normal_at, reflect, PointLight, Material, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
-    is_shadowed, EPSILON, test_shape, Shape, Plane
+    is_shadowed, EPSILON, test_shape, Shape, Plane, stripe_pattern, stripe_at, \
+    stripe_at_object, set_pattern_transform, test_pattern
 from math import sqrt
 
 
@@ -878,7 +879,8 @@ class TestRayMath(unittest.TestCase):
         eyev = Vector(0, 0, -1)
         normalv = Vector(0, 0, -1)
         light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
-        result = lighting(m, light, position, eyev, normalv)
+        obj = Sphere()
+        result = lighting(m, obj, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.9, 1.9, 1.9))
 
     def test_lighting_with_eye_between_light_and_surface_eye_offset_45_degrees(self):
@@ -887,7 +889,8 @@ class TestRayMath(unittest.TestCase):
         eyev = Vector(0, math.sqrt(2) / 2, -math.sqrt(2) / 2)
         normalv = Vector(0, 0, -1)
         light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
-        result = lighting(m, light, position, eyev, normalv)
+        obj = Sphere()
+        result = lighting(m, obj, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.0, 1.0, 1.0))
 
     def test_lighting_with_eye_opposite_surface_light_offset_45_degrees(self):
@@ -896,7 +899,8 @@ class TestRayMath(unittest.TestCase):
         eyev = Vector(0, 0, -1)
         normalv = Vector(0, 0, -1)
         light = PointLight(Point(0, 10, -10), Color(1, 1, 1))
-        result = lighting(m, light, position, eyev, normalv)
+        obj = Sphere()
+        result = lighting(m, obj, light, position, eyev, normalv)
         self.assertEqual(result, Color(0.7364, 0.7364, 0.7364))
 
     def test_lighting_with_eye_in_path_of_the_reflection_vector(self):
@@ -905,7 +909,8 @@ class TestRayMath(unittest.TestCase):
         eyev = Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
         normalv = Vector(0, 0, -1)
         light = PointLight(Point(0, 10, -10), Color(1, 1, 1))
-        result = lighting(m, light, position, eyev, normalv)
+        obj = Sphere()
+        result = lighting(m, obj, light, position, eyev, normalv)
         self.assertEqual(result, Color(1.6364, 1.6364, 1.6364))
 
     def test_lighting_with_light_behind_the_surface(self):
@@ -914,8 +919,8 @@ class TestRayMath(unittest.TestCase):
         eyev = Vector(0, 0, -1)
         normalv = Vector(0, 0, -1)
         light = PointLight(Point(0, 0, 10), Color(1, 1, 1))
-        result = lighting(m, light, position, eyev, normalv)
-        # print(result)
+        obj = Sphere()
+        result = lighting(m, obj, light, position, eyev, normalv)
         self.assertEqual(result, Color(0.1, 0.1, 0.1))
 
     def test_create_a_world(self):
@@ -1118,7 +1123,8 @@ class TestRayMath(unittest.TestCase):
         in_shadow = True
         m = Material()
         p = Point(0, 0, 0)
-        result = lighting(m, light, p, eyev, normalv, in_shadow)
+        obj = Sphere()
+        result = lighting(m, obj, light, p, eyev, normalv, in_shadow)
         self.assertEqual(result, Color(0.1, 0.1, 0.1))
 
     def test_no_shadow_when_nothing_is_collinear_with_point_and_light(self):
@@ -1215,6 +1221,98 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(len(xs), 1)
         self.assertEqual(xs[0].t, 1)
         self.assertEqual(xs[0].s_object, p)
+
+    def test_create_a_stripe_pattern(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+
+        self.assertEqual(pattern.a, white)
+        self.assertEqual(pattern.b, black)
+
+    def test_stripe_pattern_constant_in_y(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        self.assertEqual(stripe_at(pattern, Point(0, 0, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(0, 1, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(0, 2, 0)), white)
+
+    def test_stripe_pattern_constant_in_z(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        self.assertEqual(stripe_at(pattern, Point(0, 0, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(0, 1, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(0, 2, 0)), white)
+
+    def test_stripe_pattern_alternates_in_x(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        self.assertEqual(stripe_at(pattern, Point(0, 0, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(0.9, 1, 0)), white)
+        self.assertEqual(stripe_at(pattern, Point(1, 0, 0)), black)
+        self.assertEqual(stripe_at(pattern, Point(-0.1, 0, 0)), black)
+        self.assertEqual(stripe_at(pattern, Point(-1, 0, 0)), black)
+        self.assertEqual(stripe_at(pattern, Point(-1.1, 0, 0)), white)
+
+    def test_lighting_with_pattern_applied(self):
+        m = Material()
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        m.pattern = stripe_pattern(white, black)
+        m.ambient = 1
+        m.diffuse = 0
+        m.specular = 0
+        eyev = Vector(0, 0, -1)
+        normalv = Vector(0, 0, -1)
+        light = PointLight(Point(0, 0, -10), Color(1, 1, 1))
+        obj = Sphere()
+        c1 = lighting(m, obj, light, Point(0.9, 0, 0), eyev, normalv, False)
+        c2 = lighting(m, obj, light, Point(1.1, 0, 0), eyev, normalv, False)
+        self.assertEqual(c1, white)
+        self.assertEqual(c2, black)
+
+    def test_stripes_with_an_object_transformation(self):
+        obj = Sphere()
+        set_transform(obj, scaling(2, 2, 2))
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        c = stripe_at_object(pattern, obj, Point(1.5, 0, 0))
+        self.assertEqual(c, white)
+
+    def test_stripes_with_an_pattern_transformation(self):
+        obj = Sphere()
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        set_pattern_transform(pattern, scaling(2, 2, 2))
+        c = stripe_at_object(pattern, obj, Point(1.5, 0, 0))
+        self.assertEqual(c, white)
+
+    def test_stripes_with_both_object_and_pattern_transformation(self):
+        obj = Sphere()
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = stripe_pattern(white, black)
+        set_pattern_transform(pattern, translation(0.5, 0, 0))
+        set_transform(obj, scaling(2, 2, 2))
+        c = stripe_at_object(pattern, obj, Point(2.5, 0, 0))
+        self.assertEqual(c, white)
+
+    def test_default_pattern_transform(self):
+        pattern = test_pattern()
+        pattern.transform = Matrix([[1, 0, 0, 0],
+                                    [0, 1, 0, 0],
+                                    [0, 0, 1, 0],
+                                    [0, 0, 0, 1]])
+
+    def test_assigning_a_transformation(self):
+        pattern = test_pattern()
+        set_pattern_transform(pattern, translation(1, 2, 3))
+        self.assertEqual(pattern.transform, translation(1, 2, 3))
 
 
 if __name__ == '__main__':

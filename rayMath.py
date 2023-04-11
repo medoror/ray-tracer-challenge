@@ -17,6 +17,26 @@ def auto_str(cls):
     return cls
 
 
+class AbstractPattern(ABC):
+    def __init__(self, color_a, color_b):
+        self.a = color_a
+        self.b = color_b
+        self.transform = Matrix([[1, 0, 0, 0],
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]])
+
+
+class Pattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+
+class TestPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+
 class Shape(ABC):
     def __init__(self):
         self.transform = Matrix([[1, 0, 0, 0],
@@ -45,6 +65,7 @@ class TestShape(Shape):
 
     def local_intersect(self, ray):
         self.saved_ray = ray
+
 
 class Plane(Shape):
     def __init__(self):
@@ -136,6 +157,7 @@ class Material:
         self.diffuse = 0.9
         self.specular = 0.9
         self.shininess = 200.0
+        self.pattern = None
 
     def __eq__(self, other):
         if isinstance(other, Material):
@@ -705,6 +727,7 @@ def transform(ray, matrix):
 def set_transform(sphere, translation):
     sphere.transform = translation
 
+
 def normal_at(shape, world_point):
     local_point = inverse(shape.transform) * world_point
     local_normal = shape.local_normal_at(local_point)
@@ -717,9 +740,15 @@ def reflect(in_vector, normal):
     return in_vector - normal * 2 * dot(in_vector, normal)
 
 
-def lighting(material, light, point, eyev, normalv, in_shadow=False):
+def lighting(material, obj, light, point, eyev, normalv, in_shadow=False):
+    color = Color(0, 0, 0)
+    if material.pattern is None:
+        color = material.color
+    else:
+        color = stripe_at_object(material.pattern, obj, point)
+
     # combine the surface color with the lights color/intensity
-    effective_color = material.color * light.intensity
+    effective_color = color * light.intensity
     # find the direction to the light source
     lightv = normalize(light.position - point)
     # compute the ambient contribution
@@ -800,7 +829,8 @@ def prepare_computations(intersection, ray):
 
 def shade_hit(world, comps):
     shadow = is_shadowed(world, comps.over_point)
-    return lighting(comps.object.material, world.light, comps.over_point, comps.eyev, comps.normalv, shadow)
+    return lighting(comps.object.material, comps.object, world.light, comps.over_point, comps.eyev, comps.normalv,
+                    shadow)
 
 
 def color_at(world, ray):
@@ -812,7 +842,6 @@ def color_at(world, ray):
     else:
         comps = prepare_computations(possible_intersection, ray)
         return shade_hit(world, comps)
-
 
 
 def view_transforfmation(from_vector, to_vector, up_vector):
@@ -882,3 +911,31 @@ def is_shadowed(world, point):
 
 def test_shape():
     return TestShape()
+
+
+def stripe_pattern(color_a, color_b):
+    return Pattern(color_a, color_b)
+
+
+def stripe_at(pattern, point):
+    if math.floor(point.tuple.x) % 2 == 0:
+        return pattern.a
+    else:
+        return pattern.b
+
+
+def set_pattern_transform(pattern, transform):
+    pattern.transform = transform
+
+
+def stripe_at_object(pattern, obj, world_point):
+    object_point = inverse(obj.transform) * world_point
+    pattern_point = inverse(pattern.transform) * object_point
+
+    return stripe_at(pattern, pattern_point)
+
+
+def test_pattern():
+    black = Color(0, 0, 0)
+    white = Color(1, 1, 1)
+    return TestPattern(white, black)
