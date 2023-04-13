@@ -26,15 +26,28 @@ class AbstractPattern(ABC):
                                  [0, 0, 1, 0],
                                  [0, 0, 0, 1]])
 
+    @abstractmethod
+    def pattern_at(self, point):
+        pass
 
-class Pattern(AbstractPattern):
+
+class DefaultPattern(AbstractPattern):
     def __init__(self, color_a, color_b):
         super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if math.floor(point.tuple.x) % 2 == 0:
+            return self.a
+        else:
+            return self.b
 
 
 class TestPattern(AbstractPattern):
     def __init__(self, color_a, color_b):
         super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        return Color(point.tuple.x, point.tuple.y, point.tuple.z)
 
 
 class Shape(ABC):
@@ -745,7 +758,7 @@ def lighting(material, obj, light, point, eyev, normalv, in_shadow=False):
     if material.pattern is None:
         color = material.color
     else:
-        color = stripe_at_object(material.pattern, obj, point)
+        color = pattern_at_shape(material.pattern, obj, point)
 
     # combine the surface color with the lights color/intensity
     effective_color = color * light.intensity
@@ -914,7 +927,7 @@ def test_shape():
 
 
 def stripe_pattern(color_a, color_b):
-    return Pattern(color_a, color_b)
+    return DefaultPattern(color_a, color_b)
 
 
 def stripe_at(pattern, point):
@@ -939,3 +952,10 @@ def test_pattern():
     black = Color(0, 0, 0)
     white = Color(1, 1, 1)
     return TestPattern(white, black)
+
+
+def pattern_at_shape(pattern, shape, world_point):
+    object_point = inverse(shape.transform) * world_point
+    pattern_point = inverse(pattern.transform) * object_point
+
+    return pattern.pattern_at(pattern_point)

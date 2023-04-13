@@ -12,7 +12,7 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
     is_shadowed, EPSILON, test_shape, Shape, Plane, stripe_pattern, stripe_at, \
-    stripe_at_object, set_pattern_transform, test_pattern
+    stripe_at_object, set_pattern_transform, test_pattern, pattern_at_shape
 from math import sqrt
 
 
@@ -1277,30 +1277,24 @@ class TestRayMath(unittest.TestCase):
     def test_stripes_with_an_object_transformation(self):
         obj = Sphere()
         set_transform(obj, scaling(2, 2, 2))
-        black = Color(0, 0, 0)
-        white = Color(1, 1, 1)
-        pattern = stripe_pattern(white, black)
-        c = stripe_at_object(pattern, obj, Point(1.5, 0, 0))
-        self.assertEqual(c, white)
+        pattern = test_pattern()
+        c = pattern_at_shape(pattern, obj, Point(2, 3, 4))
+        self.assertEqual(c, Color(1, 1.5, 2))
 
     def test_stripes_with_an_pattern_transformation(self):
         obj = Sphere()
-        black = Color(0, 0, 0)
-        white = Color(1, 1, 1)
-        pattern = stripe_pattern(white, black)
+        pattern = test_pattern()
         set_pattern_transform(pattern, scaling(2, 2, 2))
-        c = stripe_at_object(pattern, obj, Point(1.5, 0, 0))
-        self.assertEqual(c, white)
+        c = pattern_at_shape(pattern, obj, Point(2, 3, 4))
+        self.assertEqual(c, Color(1, 1.5, 2))
 
     def test_stripes_with_both_object_and_pattern_transformation(self):
         obj = Sphere()
-        black = Color(0, 0, 0)
-        white = Color(1, 1, 1)
-        pattern = stripe_pattern(white, black)
-        set_pattern_transform(pattern, translation(0.5, 0, 0))
         set_transform(obj, scaling(2, 2, 2))
-        c = stripe_at_object(pattern, obj, Point(2.5, 0, 0))
-        self.assertEqual(c, white)
+        pattern = test_pattern()
+        set_pattern_transform(pattern, translation(0.5, 1, 1.5))
+        c = pattern_at_shape(pattern, obj, Point(2.5, 3, 3.5))
+        self.assertEqual(c, Color(0.75, 0.5, 0.25))
 
     def test_default_pattern_transform(self):
         pattern = test_pattern()
