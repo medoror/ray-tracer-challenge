@@ -50,6 +50,39 @@ class TestPattern(AbstractPattern):
         return Color(point.tuple.x, point.tuple.y, point.tuple.z)
 
 
+class GradientPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        distance = self.b - self.a
+        fraction = point.tuple.x - math.floor(point.tuple.x)
+
+        return self.a + distance * fraction
+
+
+class RingPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if math.floor(math.sqrt(point.tuple.x * point.tuple.x + point.tuple.z * point.tuple.z)) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
+
+class CheckerPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if (math.floor(point.tuple.x)+math.floor(point.tuple.y)+math.floor(point.tuple.z)) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
+
 class Shape(ABC):
     def __init__(self):
         self.transform = Matrix([[1, 0, 0, 0],
@@ -941,13 +974,6 @@ def set_pattern_transform(pattern, transform):
     pattern.transform = transform
 
 
-def stripe_at_object(pattern, obj, world_point):
-    object_point = inverse(obj.transform) * world_point
-    pattern_point = inverse(pattern.transform) * object_point
-
-    return stripe_at(pattern, pattern_point)
-
-
 def test_pattern():
     black = Color(0, 0, 0)
     white = Color(1, 1, 1)
@@ -959,3 +985,15 @@ def pattern_at_shape(pattern, shape, world_point):
     pattern_point = inverse(pattern.transform) * object_point
 
     return pattern.pattern_at(pattern_point)
+
+
+def gradient_pattern(color_a, color_b):
+    return GradientPattern(color_a, color_b)
+
+
+def ring_pattern(color_a, color_b):
+    return RingPattern(color_a, color_b)
+
+
+def checker_pattern(color_a, color_b):
+    return CheckerPattern(color_a, color_b)

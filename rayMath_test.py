@@ -12,7 +12,8 @@ from rayMath import Color, Matrix, Tuple, Point, Vector, \
     lighting, World, default_world, intersect_world, prepare_computations, \
     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
     is_shadowed, EPSILON, test_shape, Shape, Plane, stripe_pattern, stripe_at, \
-    stripe_at_object, set_pattern_transform, test_pattern, pattern_at_shape
+    set_pattern_transform, test_pattern, pattern_at_shape, gradient_pattern, \
+    ring_pattern, checker_pattern
 from math import sqrt
 
 
@@ -1308,6 +1309,47 @@ class TestRayMath(unittest.TestCase):
         set_pattern_transform(pattern, translation(1, 2, 3))
         self.assertEqual(pattern.transform, translation(1, 2, 3))
 
+    def test_gradient_linearly_interpolates_between_colors(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = gradient_pattern(white, black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(0.25, 0, 0)), Color(0.75, 0.75, 0.75))
+        self.assertEqual(pattern.pattern_at(Point(0.5, 0, 0)), Color(0.5, 0.5, 0.5))
+        self.assertEqual(pattern.pattern_at(Point(0.75, 0, 0)), Color(0.25, 0.25, 0.25))
+
+    def test_ring_should_extend_in_both_x_and_z(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = ring_pattern(white, black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(1, 0, 0)), black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 1)), black)
+        self.assertEqual(pattern.pattern_at(Point(0.708, 0, 0.708)), black)
+
+    def test_checkers_should_repeat_in_x(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = checker_pattern(white, black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(0.99, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(1.01, 0, 0)), black)
+
+    def test_checkers_should_repeat_in_y(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = checker_pattern(white, black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(0, 0.99, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(0, 1.01, 0)), black)
+
+    def test_checkers_should_repeat_in_z(self):
+        black = Color(0, 0, 0)
+        white = Color(1, 1, 1)
+        pattern = checker_pattern(white, black)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0)), white)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 0.99)), white)
+        self.assertEqual(pattern.pattern_at(Point(0, 0, 1.01)), black)
 
 if __name__ == '__main__':
     unittest.main()
