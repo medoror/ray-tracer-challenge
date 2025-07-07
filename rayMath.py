@@ -1,156 +1,11 @@
 import math
-from math import sqrt, fabs, ceil
+from math import sqrt, ceil
 import sys
-import copy
-from abc import ABC, abstractmethod
-
-EPSILON = 0.0001
-MATRIX_EPSILON = 0.01
-MAX_CHARACTER_LENGTH = 70
-
-
-def auto_str(cls):
-    def __str__(self):
-        return '(%s)' % (', '.join('%s=%s' % item for item in vars(self).items()))
-
-    cls.__str__ = __str__
-    return cls
-
-
-class AbstractPattern(ABC):
-    def __init__(self, color_a, color_b):
-        self.a = color_a
-        self.b = color_b
-        self.transform = Matrix([[1, 0, 0, 0],
-                                 [0, 1, 0, 0],
-                                 [0, 0, 1, 0],
-                                 [0, 0, 0, 1]])
-
-    @abstractmethod
-    def pattern_at(self, point):
-        pass
-
-
-class DefaultPattern(AbstractPattern):
-    def __init__(self, color_a, color_b):
-        super().__init__(color_a, color_b)
-
-    def pattern_at(self, point):
-        if math.floor(point.tuple.x) % 2 == 0:
-            return self.a
-        else:
-            return self.b
-
-
-class TestPattern(AbstractPattern):
-    def __init__(self, color_a, color_b):
-        super().__init__(color_a, color_b)
-
-    def pattern_at(self, point):
-        return Color(point.tuple.x, point.tuple.y, point.tuple.z)
-
-
-class GradientPattern(AbstractPattern):
-    def __init__(self, color_a, color_b):
-        super().__init__(color_a, color_b)
-
-    def pattern_at(self, point):
-        distance = self.b - self.a
-        fraction = point.tuple.x - math.floor(point.tuple.x)
-
-        return self.a + distance * fraction
-
-
-class RingPattern(AbstractPattern):
-    def __init__(self, color_a, color_b):
-        super().__init__(color_a, color_b)
-
-    def pattern_at(self, point):
-        if math.floor(math.sqrt(point.tuple.x * point.tuple.x + point.tuple.z * point.tuple.z)) % 2 == 0:
-            return self.a
-        else:
-            return self.b
-
-
-class CheckerPattern(AbstractPattern):
-    def __init__(self, color_a, color_b):
-        super().__init__(color_a, color_b)
-
-    def pattern_at(self, point):
-        if (math.floor(point.tuple.x)+math.floor(point.tuple.y)+math.floor(point.tuple.z)) % 2 == 0:
-            return self.a
-        else:
-            return self.b
-
-
-class Shape(ABC):
-    def __init__(self):
-        self.transform = Matrix([[1, 0, 0, 0],
-                                 [0, 1, 0, 0],
-                                 [0, 0, 1, 0],
-                                 [0, 0, 0, 1]])
-
-        self.material = Material()
-
-    @abstractmethod
-    def local_intersect(self, ray):
-        pass
-
-    @abstractmethod
-    def local_normal_at(self, point):
-        pass
-
-
-class TestShape(Shape):
-    def __init__(self):
-        super().__init__()
-        self.saved_ray = Ray(Point(0, 0, 0), Vector(0, 0, 0))
-
-    def local_normal_at(self, point):
-        return Vector(point.tuple.x, point.tuple.y, point.tuple.z)
-
-    def local_intersect(self, ray):
-        self.saved_ray = ray
-
-
-class Plane(Shape):
-    def __init__(self):
-        super().__init__()
-
-    def local_normal_at(self, point):
-        return Vector(0, 1, 0)
-
-    def local_intersect(self, ray):
-        if math.fabs(ray.direction.tuple.y) < EPSILON:
-            return []
-        t = -ray.origin.tuple.y / ray.direction.tuple.y
-        return [Intersection(t, self)]
-
-
-@auto_str
-class Sphere(Shape):
-    def __init__(self):
-        super().__init__()
-
-    def local_normal_at(self, point):
-        return point - Point(0, 0, 0)
-
-    def local_intersect(self, ray):
-        sphere_to_ray = ray.origin - Point(0, 0, 0)  # unit circle for now
-        a = dot(ray.direction, ray.direction)
-        b = 2 * dot(ray.direction, sphere_to_ray)
-        c = dot(sphere_to_ray, sphere_to_ray) - 1
-
-        discriminant = b * b - 4 * a * c
-        # print("discriminant: {0}".format(discriminant))
-
-        if discriminant < 0:
-            return []
-
-        t1 = (-b - math.sqrt(discriminant)) / (2 * a)
-        t2 = (-b + math.sqrt(discriminant)) / (2 * a)
-
-        return [Intersection(t1, self), Intersection(t2, self)]
+from base import Material, Matrix, Intersection, Vector, Ray, Point, Color, dot
+from utils import auto_str, EPSILON, MAX_CHARACTER_LENGTH
+from base import inverse
+from base import transpose
+from shapes import Sphere
 
 
 @auto_str
@@ -159,7 +14,7 @@ class Camera:
         self.hsize = hsize
         self.vsize = vsize
         self.field_of_view = field_of_view
-        self.transform = Matrix([[1, 0, 0, 0],
+        self.transform: Matrix = Matrix([[1, 0, 0, 0],
                                  [0, 1, 0, 0],
                                  [0, 0, 1, 0],
                                  [0, 0, 0, 1]])
@@ -194,291 +49,11 @@ class World:
         self.objects = []
         self.light = None
 
-
-@auto_str
-class Material:
-    def __init__(self):
-        self.color = Color(1, 1, 1)
-        self.ambient = 0.1
-        self.diffuse = 0.9
-        self.specular = 0.9
-        self.shininess = 200.0
-        self.pattern = None
-
-    def __eq__(self, other):
-        if isinstance(other, Material):
-            return self.color == other.color and \
-                self.ambient == other.ambient and \
-                self.diffuse == other.diffuse and \
-                self.specular == other.specular and \
-                self.shininess == other.shininess
-
-        return False
-
-
 @auto_str
 class PointLight:
     def __init__(self, position, intensity):
         self.position = position
         self.intensity = intensity
-
-
-@auto_str
-class Intersection:
-    def __init__(self, distance_t, s_object):
-        self.t = distance_t
-        self.s_object = s_object  # s_object -> x_object??
-
-
-@auto_str
-class Ray:
-    def __init__(self, origin, direction):
-        self.origin = origin
-        self.direction = direction
-
-
-@auto_str
-class Matrix:
-    def __init__(self, matrix):
-        self.matrix = matrix
-
-    def __len__(self):
-        if type(self.matrix) is list:
-            return len(self.matrix)
-
-    def __getitem__(self, indices):
-        if type(indices) is tuple:
-            return self.matrix[indices[0]][indices[1]]
-        else:
-            return self.matrix[indices]
-
-    def __eq__(self, other):
-        if isinstance(other, Matrix):
-            # assumes matricies are the same size!
-            rows = len(self.matrix)
-            columns = len(self.matrix[0])
-
-            for row in range(rows):
-                for col in range(columns):
-                    if not Matrix.equals(self.matrix[row][col], other.matrix[row][col]):
-                        return False
-            return True
-        return False
-
-    def __mul__(self, other):
-        if isinstance(other, Matrix):
-            return self.matrix_multiply(self.matrix, other.matrix)
-
-        if isinstance(other, Tuple):
-            convert_to_matrix = Matrix([[other.x],
-                                        [other.y],
-                                        [other.z],
-                                        [other.w]])
-            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
-            return Tuple(new_matrix[0, 0],
-                         new_matrix[1, 0],
-                         new_matrix[2, 0],
-                         new_matrix[3, 0])
-
-        if isinstance(other, Point):
-            convert_to_matrix = Matrix([[other.tuple.x],
-                                        [other.tuple.y],
-                                        [other.tuple.z],
-                                        [other.tuple.w]])
-            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
-            return Point(new_matrix[0, 0],
-                         new_matrix[1, 0],
-                         new_matrix[2, 0])
-
-        if isinstance(other, Vector):
-            convert_to_matrix = Matrix([[other.tuple.x],
-                                        [other.tuple.y],
-                                        [other.tuple.z],
-                                        [other.tuple.w]])
-            new_matrix = self.matrix_multiply(self.matrix, convert_to_matrix.matrix)
-            return Vector(new_matrix[0, 0],
-                          new_matrix[1, 0],
-                          new_matrix[2, 0])
-
-    def invertible(self):
-        return determinant(self) != 0
-
-    @staticmethod
-    def equals(a, b):
-        return fabs(a - b) < MATRIX_EPSILON
-
-    @staticmethod
-    def matrix_multiply(m1, m2):
-        subRow = []
-        returnMatrix = []
-        for i in range(len(m1)):
-            for j in range(len(m2[0])):
-                sums = 0
-                for k in range(len(m2)):
-                    sums = sums + (m1[i][k] * m2[k][j])
-                subRow.append(sums)
-            returnMatrix.append(subRow)
-            subRow = []
-        return Matrix(returnMatrix)
-
-    # Will i really need to convert float matrix to an int matrix?
-    # @staticmethod
-    # def float_matrix_to_int(matrix):
-    #     return Matrix([[float(y) for y in x] for x in matrix.matrix])
-
-
-@auto_str
-class Tuple:
-    def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.w = w
-
-    def type(self):
-        return "point" if self.w == 1.0 else "vector"
-
-    def __neg__(self):
-        return Tuple(-self.x, -self.y, -self.z, -self.w)
-
-    def __eq__(self, other):
-        if isinstance(other, Tuple):
-            # return self.x == other.x and self.y == other.y and self.z == other.z and self.w == other.w
-            return Tuple.equals(self.x, other.x) and Tuple.equals(self.y, other.y) and Tuple.equals(self.z, other.z) \
-                and Tuple.equals(self.w, other.w)
-        return False
-
-    # can I create my own floating point and override equal?
-    @staticmethod
-    def equals(a, b):
-        return fabs(a - b) < EPSILON
-
-    def __add__(self, other):
-        x = self.x + other.x
-        y = self.y + other.y
-        z = self.z + other.z
-        w = self.w + other.w
-        return Tuple(x, y, z, w)
-
-    def __sub__(self, other):
-        x = self.x - other.x
-        y = self.y - other.y
-        z = self.z - other.z
-        w = self.w - other.w
-        return Tuple(x, y, z, w)
-
-    def __mul__(self, scalar):
-        x = self.x * scalar
-        y = self.y * scalar
-        z = self.z * scalar
-        w = self.w * scalar
-        return Tuple(x, y, z, w)
-
-    def __truediv__(self, scalar):
-        x = self.x / scalar
-        y = self.y / scalar
-        z = self.z / scalar
-        w = self.w / scalar
-        return Tuple(x, y, z, w)
-
-
-@auto_str
-class Point:
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.tuple = Tuple()
-        self.tuple.x = x
-        self.tuple.y = y
-        self.tuple.z = z
-        self.tuple.w = 1.0
-
-    def __sub__(self, other):
-        t1 = self.tuple - other.tuple
-        return Vector(t1.x, t1.y, t1.z)
-
-    def __eq__(self, other):
-        if isinstance(other, Point):
-            return self.tuple == other.tuple
-        return False
-
-    def __add__(self, other):
-        if isinstance(other, Vector):
-            t1 = self.tuple + other.tuple
-            return Point(t1.x, t1.y, t1.z)
-        else:
-            raise TypeError("Points cannot be added to points")
-
-
-# TOOD: Think about extending tuple to create a point and vector instead of composition
-@auto_str
-class Vector:
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.tuple = Tuple()
-        self.tuple.x = x
-        self.tuple.y = y
-        self.tuple.z = z
-        self.tuple.w = 0.0
-
-    def __add__(self, other):
-        t1 = self.tuple + other.tuple
-        return Vector(t1.x, t1.y, t1.z)
-
-    def __sub__(self, other):
-        t1 = self.tuple - other.tuple
-        return Vector(t1.x, t1.y, t1.z)
-
-    def __mul__(self, other):
-        t1 = self.tuple * other
-        return Vector(t1.x, t1.y, t1.z)
-
-    def __neg__(self):
-        t = Tuple(self.tuple.x, self.tuple.y, self.tuple.z, self.tuple.w)
-        return Vector(-t.x, -t.y, -t.z)
-
-    def __eq__(self, other):
-        if isinstance(other, Vector):
-            return self.tuple == other.tuple
-        return False
-
-
-@auto_str
-class Color:
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.tuple = Tuple()
-        self.tuple.x = x
-        self.tuple.y = y
-        self.tuple.z = z
-        self.tuple.w = 0.0
-
-        self.red = self.tuple.x
-        self.green = self.tuple.y
-        self.blue = self.tuple.z
-
-    def __eq__(self, other):
-        if isinstance(other, Color):
-            return self.tuple == other.tuple
-        return False
-
-    def __add__(self, other):
-        t1 = self.tuple + other.tuple
-        return Color(t1.x, t1.y, t1.z)
-
-    def __sub__(self, other):
-        t1 = self.tuple - other.tuple
-        return Color(t1.x, t1.y, t1.z)
-
-    def __mul__(self, other):
-        if isinstance(other, Color):
-            return self.hadamard_product_color(self.tuple, other.tuple)
-        else:
-            t1 = self.tuple * other
-            return Color(t1.x, t1.y, t1.z)
-
-    @staticmethod
-    def hadamard_product_color(c1, c2):
-        red = c1.x * c2.x
-        green = c1.y * c2.y
-        blue = c1.z * c2.z
-        return Color(red, green, blue)
 
 
 @auto_str
@@ -554,102 +129,11 @@ def normalize(vector):
                   vector.tuple.z / magnitude(vector))
 
 
-# think about throwing error if vector is not passed in
-def dot(a, b):
-    return a.tuple.x * b.tuple.x + a.tuple.y * b.tuple.y + a.tuple.z * b.tuple.z
-
 
 def cross(a, b):
     return Vector(a.tuple.y * b.tuple.z - a.tuple.z * b.tuple.y,
                   a.tuple.z * b.tuple.x - a.tuple.x * b.tuple.z,
                   a.tuple.x * b.tuple.y - a.tuple.y * b.tuple.x)
-
-
-def transpose(matrix):
-    rows = len(matrix)
-    columns = len(matrix[0])
-
-    return_matrix = []
-    for j in range(columns):
-        row = []
-        for i in range(rows):
-            row.append(matrix[i][j])
-        return_matrix.append(row)
-    return Matrix(return_matrix)
-
-
-def determinant(matrix):
-    det = 0
-    if len(matrix) == 2:
-        det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
-    else:
-        for column in range(len(matrix)):
-            det = det + matrix[0, column] * cofactor(matrix, 0, column)
-    return det
-
-
-# Can this be done better?
-# more pythonic?
-def submatrix(matrix, row, col):
-    # make a deep copy of the matrix which will be returned
-    return_matrix = copy.deepcopy(matrix.matrix)
-    # remove the row first
-    return_matrix.remove(matrix[row])
-    # delete the columns cells in place
-    columns = len(matrix[0]) - 1
-    for i in range(columns):
-        del (return_matrix[i][col])
-
-    return Matrix(return_matrix)
-
-
-def minor(matrix, row, column):
-    A = submatrix(matrix, row, column)
-    return determinant(A)
-
-
-def cofactor(matrix, row, column):
-    m = minor(matrix, row, column)
-    return m * -1 if (row + column) % 2 != 0 else m
-
-
-def generate_zero_matrix(square_size):
-    if square_size == 2:
-        return Matrix([[0, 0],
-                       [0, 0],
-                       [0, 0],
-                       [0, 0]])
-    elif square_size == 3:
-        return Matrix([[0, 0, 0],
-                       [0, 0, 0],
-                       [0, 0, 0],
-                       [0, 0, 0]])
-    elif square_size == 4:
-        return Matrix([[0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 0]])
-    else:
-        raise ValueError("Unsupported matrix size")
-
-
-def inverse(matrix):
-    if not matrix.invertible():
-        raise ValueError("Matrix is not invertible")
-
-    rows = len(matrix)
-    columns = len(matrix[0])
-    determinant_value = determinant(matrix)
-    return_matrix = generate_zero_matrix(rows)
-
-    for row in range(rows):
-        for col in range(columns):
-            c = cofactor(matrix, row, col)
-            # the book used floating point nums to 5 decimals.  I dont think we care here
-            # so the rounding should be dropped. Work towards have a better equals method
-            return_matrix[col][row] = c / determinant_value
-
-    return return_matrix
 
 
 @auto_str
@@ -701,42 +185,42 @@ class TransformationBuilder:
             return current
 
 
-def translation(x, y, z):
+def translation(x, y, z) -> Matrix:
     return Matrix([[1, 0, 0, x],
                    [0, 1, 0, y],
                    [0, 0, 1, z],
                    [0, 0, 0, 1]])
 
 
-def scaling(x, y, z):
+def scaling(x, y, z) -> Matrix:
     return Matrix([[x, 0, 0, 0],
                    [0, y, 0, 0],
                    [0, 0, z, 0],
                    [0, 0, 0, 1]])
 
 
-def rotation_x(radians):
+def rotation_x(radians) -> Matrix:
     return Matrix([[1, 0, 0, 0],
                    [0, math.cos(radians), -math.sin(radians), 0],
                    [0, math.sin(radians), math.cos(radians), 0],
                    [0, 0, 0, 1]])
 
 
-def rotation_y(radians):
+def rotation_y(radians) -> Matrix:
     return Matrix([[math.cos(radians), 0, math.sin(radians), 0],
                    [0, 1, 0, 0],
                    [-math.sin(radians), 0, math.cos(radians), 0],
                    [0, 0, 0, 1]])
 
 
-def rotation_z(radians):
+def rotation_z(radians) -> Matrix:
     return Matrix([[math.cos(radians), -math.sin(radians), 0, 0],
                    [math.sin(radians), math.cos(radians), 0, 0],
                    [0, 0, 1, 0],
                    [0, 0, 0, 1]])
 
 
-def shearing(xy, xz, yx, yz, zx, zy):
+def shearing(xy, xz, yx, yz, zx, zy) -> Matrix:
     return Matrix([[1, xy, xz, 0],
                    [yx, 1, yz, 0],
                    [zx, zy, 1, 0],
@@ -815,7 +299,7 @@ def lighting(material, obj, light, point, eyev, normalv, in_shadow=False):
         # compute the diffuse contribution
         diffuse = effective_color * material.diffuse * light_dot_normal
 
-        # reflect_dot_eye represents the cosine of the angle between the reflection vector 
+        # reflect_dot_eye represents the cosine of the angle between the reflection vector
         # and the eye vector.  A negative number means the light reflects away from the eye
         reflectv = reflect(-lightv, normalv)
         reflect_dot_eye = dot(reflectv, eyev)
@@ -830,7 +314,7 @@ def lighting(material, obj, light, point, eyev, normalv, in_shadow=False):
     return ambient + diffuse + specular
 
 
-def default_world():
+def default_world() -> World:
     w = World()
 
     s1 = Sphere()
@@ -890,7 +374,7 @@ def color_at(world, ray):
         return shade_hit(world, comps)
 
 
-def view_transforfmation(from_vector, to_vector, up_vector):
+def view_transforfmation(from_vector, to_vector, up_vector) -> Matrix:
     forward = normalize(to_vector - from_vector)
     upn = normalize(up_vector)
     left = cross(forward, upn)
@@ -955,14 +439,6 @@ def is_shadowed(world, point):
         return False
 
 
-def test_shape():
-    return TestShape()
-
-
-def stripe_pattern(color_a, color_b):
-    return DefaultPattern(color_a, color_b)
-
-
 def stripe_at(pattern, point):
     if math.floor(point.tuple.x) % 2 == 0:
         return pattern.a
@@ -973,27 +449,8 @@ def stripe_at(pattern, point):
 def set_pattern_transform(pattern, transform):
     pattern.transform = transform
 
-
-def test_pattern():
-    black = Color(0, 0, 0)
-    white = Color(1, 1, 1)
-    return TestPattern(white, black)
-
-
 def pattern_at_shape(pattern, shape, world_point):
     object_point = inverse(shape.transform) * world_point
     pattern_point = inverse(pattern.transform) * object_point
 
     return pattern.pattern_at(pattern_point)
-
-
-def gradient_pattern(color_a, color_b):
-    return GradientPattern(color_a, color_b)
-
-
-def ring_pattern(color_a, color_b):
-    return RingPattern(color_a, color_b)
-
-
-def checker_pattern(color_a, color_b):
-    return CheckerPattern(color_a, color_b)

@@ -2,18 +2,65 @@ import math
 import unittest
 import tempfile
 
-from rayMath import Color, Matrix, Tuple, Point, Vector, \
-    magnitude, cross, dot, normalize, Canvas, write_pixel, \
-    pixel_at, canvas_to_ppm, transpose, determinant, submatrix, \
-    minor, cofactor, inverse, translation, scaling, rotation_x, \
-    rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
-    position_along_ray, Sphere, intersect, Intersection, intersections, hit, \
-    transform, set_transform, normal_at, reflect, PointLight, Material, \
-    lighting, World, default_world, intersect_world, prepare_computations, \
-    shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
-    is_shadowed, EPSILON, test_shape, Shape, Plane, stripe_pattern, stripe_at, \
-    set_pattern_transform, test_pattern, pattern_at_shape, gradient_pattern, \
-    ring_pattern, checker_pattern
+# from rayMath import Color, Matrix, Point, Vector, \
+#     magnitude, cross, dot, normalize, Canvas, write_pixel, \
+#     pixel_at, canvas_to_ppm, translation, scaling, rotation_x, \
+#     rotation_y, rotation_z, shearing, TransformationBuilder, Ray, \
+#     position_along_ray, Sphere, intersect, Intersection, intersections, hit, \
+#     transform, set_transform, normal_at, reflect, PointLight, Material, \
+from rayMath import magnitude
+from rayMath import normalize
+from base import dot
+from rayMath import cross
+from rayMath import Canvas
+from rayMath import write_pixel
+from rayMath import pixel_at
+from rayMath import canvas_to_ppm
+from rayMath import shearing
+from rayMath import rotation_x
+from rayMath import scaling
+from rayMath import translation
+from rayMath import rotation_y
+from rayMath import rotation_z
+from rayMath import TransformationBuilder
+from base import Ray
+from rayMath import position_along_ray
+from shapes import Sphere
+from rayMath import intersect
+from base import Intersection
+from rayMath import intersections
+from rayMath import hit
+from rayMath import transform
+from rayMath import set_transform
+from rayMath import normal_at
+from rayMath import reflect
+from rayMath import PointLight
+from base import Material
+from rayMath import World
+from rayMath import default_world
+from rayMath import intersect_world
+from rayMath import prepare_computations
+from rayMath import shade_hit
+from rayMath import color_at
+from rayMath import view_transforfmation
+from rayMath import Camera
+from rayMath import ray_for_pixel
+from rayMath import is_shadowed
+from utils import EPSILON
+from rayMath import stripe_at
+from rayMath import set_pattern_transform
+from rayMath import pattern_at_shape
+#     lighting, World, default_world, intersect_world, prepare_computations, \
+#     shade_hit, color_at, view_transforfmation, Camera, ray_for_pixel, render, \
+#     is_shadowed, EPSILON, stripe_at, \
+#     set_pattern_transform, pattern_at_shape
+#
+from rayMath import lighting, render
+from shapes import Shape, Plane, test_shape
+from patterns import test_pattern, stripe_pattern
+from patterns import gradient_pattern,ring_pattern, checker_pattern
+from base import Tuple, transpose, determinant, submatrix, \
+minor, cofactor, inverse, Color, Matrix, Point, Vector
 from math import sqrt
 
 

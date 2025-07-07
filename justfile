@@ -29,18 +29,26 @@ lighting:
 # Create a 3D scene
 scene:
     @python -c "from main import create_scene; create_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
 
 # Create a shaded scene
 shaded:
     @python -c "from main import create_shaded_scene; create_shaded_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
 
 # Create a scene with planes
 plane:
     @python -c "from main import create_plane_scene; create_plane_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
 
 # Create a scene with patterns
 pattern:
     @python -c "from main import create_pattern_scene; create_pattern_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
+
+
+test:
+    @python -m unittest rayMath_test.py
 
 # Run a method with profiling
 profile METHOD:

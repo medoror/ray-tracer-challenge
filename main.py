@@ -2,7 +2,9 @@ import math
 from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
     Color, write_pixel, translation, rotation_x, rotation_y, rotation_z, TransformationBuilder, \
     Sphere, Ray, intersect, hit, scaling, rotation_z, shearing, Material, lighting, \
-    PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render, Plane
+    PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render
+
+from shapes import Plane
 
 
 # Run: python3 main.py
@@ -91,8 +93,10 @@ def clock():
         hour_mark = r * twelve
         translated_point = middle_of_canvas_matrix * hour_mark
         print(translated_point)
-        write_pixel(c, convert_to_pixel_space(translated_point.tuple.x),
-                    convert_to_pixel_space(translated_point.tuple.z), point_color)
+        x = convert_to_pixel_space(translated_point.tuple.x)
+        y = convert_to_pixel_space(translated_point.tuple.z)
+        if not outside_of_canvas(c, x, y):
+            write_pixel(c, x, y, point_color)
 
     canvas_to_ppm(c)
 
@@ -353,11 +357,4 @@ def create_plane_scene():
 
 
 if __name__ == '__main__':
-    # basic_projectile()
-    # ppm_projectile()
-    # clock()
-    # ray_cast_sphere()
-    # ray_cast_sphere_lighting()
-    # create_scene()
-    # create_shaded_scene()
-    create_plane_scene()
+    print("Use the justfile to run each project")

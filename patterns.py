@@ -1,0 +1,87 @@
+from abc import ABC, abstractmethod
+from rayMath import Matrix, Color
+import math
+
+class AbstractPattern(ABC):
+    def __init__(self, color_a, color_b):
+        self.a = color_a
+        self.b = color_b
+        self.transform = Matrix([[1, 0, 0, 0],
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]])
+
+    @abstractmethod
+    def pattern_at(self, point) -> Color:
+        pass
+
+
+class DefaultPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if math.floor(point.tuple.x) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
+
+class TestPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        return Color(point.tuple.x, point.tuple.y, point.tuple.z)
+
+
+class GradientPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        distance = self.b - self.a
+        fraction = point.tuple.x - math.floor(point.tuple.x)
+
+        return self.a + distance * fraction
+
+
+class RingPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if math.floor(math.sqrt(point.tuple.x * point.tuple.x + point.tuple.z * point.tuple.z)) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
+
+class CheckerPattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if (math.floor(point.tuple.x)+math.floor(point.tuple.y)+math.floor(point.tuple.z)) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
+def gradient_pattern(color_a, color_b):
+    return GradientPattern(color_a, color_b)
+
+
+def ring_pattern(color_a, color_b):
+    return RingPattern(color_a, color_b)
+
+
+def checker_pattern(color_a, color_b):
+    return CheckerPattern(color_a, color_b)
+
+def stripe_pattern(color_a, color_b):
+    return DefaultPattern(color_a, color_b)
+
+def test_pattern():
+    black = Color(0, 0, 0)
+    white = Color(1, 1, 1)
+    return TestPattern(white, black)
