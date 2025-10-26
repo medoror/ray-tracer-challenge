@@ -41,6 +41,7 @@ class PrepareComputations:
         self.normalv = normal_at(self.object, self.point)
         self.over_point = Point(0, 0, 0)
         self.inside = False
+        self.reflectv = None
 
 
 @auto_str
@@ -350,7 +351,9 @@ def prepare_computations(intersection, ray):
     if dot(comps.normalv, comps.eyev) < 0:
         comps.inside = True
         comps.normalv = -comps.normalv
+        comps.reflectv = reflect(ray.direction, comps.normalv)
         comps.over_point = comps.point + comps.normalv * EPSILON
+        print("hey")
     else:
         comps.over_point = comps.point + comps.normalv * EPSILON
         comps.inside = False

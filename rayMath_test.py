@@ -1398,5 +1398,19 @@ class TestRayMath(unittest.TestCase):
         self.assertEqual(pattern.pattern_at(Point(0, 0, 0.99)), white)
         self.assertEqual(pattern.pattern_at(Point(0, 0, 1.01)), black)
 
+    def test_reflectivity_for_default(self):
+        m = Material()
+        self.assertEqual(m.reflective, 0.0)
+
+    def test_precompute_reflection_vector(self):
+        shape = Plane()
+        r = Ray(Point(0,1,-1), Vector(0, -math.sqrt(2) / 2, math.sqrt(2) / 2 )   )
+        i = Intersection(math.sqrt(2), shape)
+        comps = prepare_computations(i, r)
+        self.assertEqual(comps.reflectv,Vector(0, math.sqrt(2) / 2, math.sqrt(2) / 2))
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -165,6 +165,7 @@ class Material:
         self.specular = 0.9
         self.shininess = 200.0
         self.pattern = None
+        self.reflective = 0.0
 
     def __eq__(self, other):
         if isinstance(other, Material):
