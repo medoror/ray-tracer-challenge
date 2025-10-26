@@ -83,6 +83,24 @@ class CheckerPattern(AbstractPattern):
         else:
             return self.b
 
+
+class BlendedPattern(AbstractPattern):
+    def __init__(self, pattern_a, pattern_b):
+        # Dummy colors for parent class
+        super().__init__(Color(0,0,0), Color(0,0,0))
+        self.pattern_a = pattern_a
+        self.pattern_b = pattern_b
+
+    def pattern_at(self, point):
+        color_a = self.pattern_a.pattern_at(point)
+        color_b = self.pattern_b.pattern_at(point)
+        # Simple average blend
+        return Color(
+            (color_a.tuple.x + color_b.tuple.x) / 2,
+            (color_a.tuple.y + color_b.tuple.y) / 2,
+            (color_a.tuple.z + color_b.tuple.z) / 2
+        )
+
 def gradient_pattern(color_a, color_b):
     return GradientPattern(color_a, color_b)
 
@@ -96,6 +114,9 @@ def checker_pattern(color_a, color_b):
 
 def stripe_pattern(color_a, color_b):
     return DefaultPattern(color_a, color_b)
+
+def blended_pattern(pattern_a, pattern_b):
+    return BlendedPattern(pattern_a, pattern_b)
 
 def test_pattern():
     black = Color(0, 0, 0)

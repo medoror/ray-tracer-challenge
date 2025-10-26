@@ -46,6 +46,15 @@ pattern:
     @python -c "from main import create_pattern_scene; create_pattern_scene()"
     @open canvas.ppm || echo "Could not open canvas.ppm"
 
+# Create a scene with blended patterns
+blended:
+    @python -c "from main import create_blended_pattern_scene; create_blended_pattern_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
+
+plane_pattern:
+    @python -c "from main import create_plane_pattern_scene; create_plane_pattern_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
+
 
 test:
     @python -m unittest rayMath_test.py
