@@ -3,4 +3,13 @@
 Run `just` to get the list of available commands
 
 Currently on:
-Getting patterns to work running just plane
+Why is my plane_pattern not showing perpendeicular lines?
+What would it look like to right a wrapper to declrartively
+create scenes
+Linter would be nice
+
+need a cheast sheat
+cooridnate system
+camera system
+how transforms work and what order
+ray vs vector

@@ -83,6 +83,16 @@ class CheckerPattern(AbstractPattern):
         else:
             return self.b
 
+class ZStripePattern(AbstractPattern):
+    def __init__(self, color_a, color_b):
+        super().__init__(color_a, color_b)
+
+    def pattern_at(self, point):
+        if math.floor(point.tuple.z) % 2 == 0:
+            return self.a
+        else:
+            return self.b
+
 
 class BlendedPattern(AbstractPattern):
     def __init__(self, pattern_a, pattern_b):
@@ -117,6 +127,9 @@ def stripe_pattern(color_a, color_b):
 
 def blended_pattern(pattern_a, pattern_b):
     return BlendedPattern(pattern_a, pattern_b)
+
+def z_stripe_pattern(color_a, color_b):
+    return ZStripePattern(color_a, color_b)
 
 def test_pattern():
     black = Color(0, 0, 0)

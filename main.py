@@ -5,7 +5,7 @@ from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
     PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render
 
 from shapes import Plane
-from patterns import checker_pattern, ring_pattern, gradient_pattern, stripe_pattern, blended_pattern
+from patterns import checker_pattern, ring_pattern, gradient_pattern, stripe_pattern, blended_pattern, z_stripe_pattern
 
 
 # Run: python3 main.py
@@ -503,11 +503,13 @@ def create_plane_pattern_scene():
     green = Color(0, 1, 0)
     white = Color(1, 1, 1)
 
+    # Horizontal stripes (along X-axis)
     horizontal_stripes = stripe_pattern(green, white)
-    horizontal_stripes.transform = scaling(0.5, 0.5, 0.5)
+    horizontal_stripes.transform = scaling(0.2, 0.2, 0.2)
 
-    vertical_stripes = stripe_pattern(green, white)
-    vertical_stripes.transform = scaling(0.5, 0.5, 0.5) * rotation_y(3*math.pi/4)
+    # Vertical stripes (along Z-axis) - use Z-stripe pattern for true crossing
+    vertical_stripes = z_stripe_pattern(green, white)
+    vertical_stripes.transform = scaling(0.2, 0.2, 0.2)
 
     blended = blended_pattern(horizontal_stripes, vertical_stripes)
 
