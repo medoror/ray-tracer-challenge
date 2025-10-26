@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from base import Material, Matrix, Intersection, Vector, Ray, Point
+from base import Material, Matrix, Intersection, Vector, Ray, Point, inverse
 # If you need dot function, import it explicitly
 from math import fabs,sqrt
 from base import dot
@@ -7,12 +7,27 @@ from utils import auto_str, EPSILON
 
 class Shape(ABC):
     def __init__(self):
-        self.transform: Matrix = Matrix([[1, 0, 0, 0],
+        self._transform: Matrix = Matrix([[1, 0, 0, 0],
                                  [0, 1, 0, 0],
                                  [0, 0, 1, 0],
                                  [0, 0, 0, 1]])
-
+        self._inverse_transform = None
         self.material = Material()
+
+    @property
+    def transform(self):
+        return self._transform
+
+    @transform.setter
+    def transform(self, value):
+        self._transform = value
+        self._inverse_transform = None  # Clear cached inverse when transform changes
+
+    @property
+    def inverse_transform(self):
+        if self._inverse_transform is None:
+            self._inverse_transform = inverse(self._transform)
+        return self._inverse_transform
 
     @abstractmethod
     def local_intersect(self, ray) -> list[Intersection] | None:

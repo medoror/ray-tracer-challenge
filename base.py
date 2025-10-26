@@ -300,16 +300,21 @@ def determinant(matrix):
 # Can this be done better?
 # more pythonic?
 def submatrix(matrix, row, col):
-    # make a deep copy of the matrix which will be returned
-    return_matrix = copy.deepcopy(matrix.matrix)
-    # remove the row first
-    return_matrix.remove(matrix[row])
-    # delete the columns cells in place
-    columns = len(matrix[0]) - 1
-    for i in range(columns):
-        del (return_matrix[i][col])
+    # Build submatrix manually without expensive deepcopy
+    size = len(matrix)
+    result = []
 
-    return Matrix(return_matrix)
+    for r in range(size):
+        if r == row:
+            continue  # Skip the excluded row
+        new_row = []
+        for c in range(size):
+            if c == col:
+                continue  # Skip the excluded column
+            new_row.append(matrix[r][c])
+        result.append(new_row)
+
+    return Matrix(result)
 
 def generate_zero_matrix(square_size):
     if square_size == 2:

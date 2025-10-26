@@ -450,7 +450,7 @@ def set_pattern_transform(pattern, transform):
     pattern.transform = transform
 
 def pattern_at_shape(pattern, shape, world_point):
-    object_point = inverse(shape.transform) * world_point
-    pattern_point = inverse(pattern.transform) * object_point
+    object_point = shape.inverse_transform * world_point
+    pattern_point = pattern.inverse_transform * object_point
 
     return pattern.pattern_at(pattern_point)

@@ -1,15 +1,31 @@
 from abc import ABC, abstractmethod
-from rayMath import Matrix, Color
+from rayMath import Matrix, Color, inverse
 import math
 
 class AbstractPattern(ABC):
     def __init__(self, color_a, color_b):
         self.a = color_a
         self.b = color_b
-        self.transform = Matrix([[1, 0, 0, 0],
-                                 [0, 1, 0, 0],
-                                 [0, 0, 1, 0],
-                                 [0, 0, 0, 1]])
+        self._transform = Matrix([[1, 0, 0, 0],
+                                  [0, 1, 0, 0],
+                                  [0, 0, 1, 0],
+                                  [0, 0, 0, 1]])
+        self._inverse_transform = None
+
+    @property
+    def transform(self):
+        return self._transform
+
+    @transform.setter
+    def transform(self, value):
+        self._transform = value
+        self._inverse_transform = None  # Clear cached inverse when transform changes
+
+    @property
+    def inverse_transform(self):
+        if self._inverse_transform is None:
+            self._inverse_transform = inverse(self._transform)
+        return self._inverse_transform
 
     @abstractmethod
     def pattern_at(self, point) -> Color:
