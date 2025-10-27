@@ -55,6 +55,10 @@ plane_pattern:
     @python -c "from main import create_plane_pattern_scene; create_plane_pattern_scene()"
     @open canvas.ppm || echo "Could not open canvas.ppm"
 
+create_perturbed_scene:
+    @python -c "from main import create_perturbed_scene; create_perturbed_scene()"
+    @open canvas.ppm || echo "Could not open canvas.ppm"
+
 
 test:
     @python -m unittest rayMath_test.py

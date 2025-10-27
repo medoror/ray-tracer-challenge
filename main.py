@@ -525,6 +525,69 @@ def create_plane_pattern_scene():
     canvas = render(camera, world)
     canvas_to_ppm(canvas)
 
+def create_perturbed_scene():
+    world = World()
+    world.light = PointLight(Point(-10, 10, -10), Color(1, 1, 1))
+
+    # Just the floor plane with pattern
+    floor = Plane()
+
+    # Your crossing stripes
+    red = Color(1, 0, 0)
+    white = Color(1, 1, 1)
+
+    # Horizontal stripes (along X-axis)
+    horizontal_stripes = stripe_pattern(red, white)
+    horizontal_stripes.transform = scaling(0.2, 0.2, 0.2)
+
+    # Vertical stripes (along Z-axis) - use Z-stripe pattern for true crossing
+    vertical_stripes = z_stripe_pattern(red, white)
+    vertical_stripes.transform = scaling(0.2, 0.2, 0.2)
+
+    blended = blended_pattern(horizontal_stripes, vertical_stripes)
+
+    floor.material = Material()
+    floor.material.pattern = blended
+    floor.material.specular = 0
+    world.objects.append(floor)
+
+    middle = Sphere()
+    middle.transform = TransformationBuilder().translate(-0.5, 1, 0.5).build()
+    middle.material = Material()
+    middle.material.color = Color(0.1, 1, 0.5)
+    middle.material.diffuse = 0.7
+    middle.material.specular = 0.3
+    world.objects.append(middle)
+
+    right = Sphere()
+    right.transform = translation(1.5, 0.5, -0.5) * scaling(0.5, 0.5, 0.5)
+    right.material = Material()
+    right.material.color = Color(0.5, 1, 0.1)
+    right.material.diffuse = 0.7
+    right.material.specular = 0.3
+    world.objects.append(right)
+
+    left = Sphere()
+    black = Color(0, 0, 0)
+    white = Color(1, 1, 1)
+    pattern = stripe_pattern(white, black)
+    pattern.transform = scaling(2, 2, 2)  # Make stripes much larger
+    left.transform = translation(-1.5, 0.33, -0.75) * scaling(0.33, 0.33, 0.33)
+    left.material = Material()
+    left.material.color = Color(1, 0.8, 0.1)
+    left.material.diffuse = 0.7
+    left.material.specular = 0.3
+    left.material.pattern = pattern
+    world.objects.append(left)
+
+    # Camera looking down at angle
+    camera = Camera(400, 400, math.pi/3)
+    camera.transform = view_transforfmation(Point(0, 2, -5), Point(0, 0, 0), Vector(0, 1, 0))
+
+    canvas = render(camera, world)
+    canvas_to_ppm(canvas)
+
+
 
 
 if __name__ == '__main__':
