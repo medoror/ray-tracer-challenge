@@ -1,0 +1,11 @@
+[
+  {
+    "label": "Python: unittest rayMath_test.py",
+    "adapter": "Debugpy",
+    "request": "launch",
+    "module": "unittest",
+    "args": ["rayMath_test.py"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "justMyCode": true
+  }
+]
