@@ -5,7 +5,7 @@ from rayMath import Point, Vector, normalize, Canvas, canvas_to_ppm, \
     PointLight, position_along_ray, normal_at, view_transforfmation, World, Camera, render
 
 from shapes import Plane
-from patterns import checker_pattern, ring_pattern, gradient_pattern, stripe_pattern, blended_pattern, z_stripe_pattern
+from patterns import checker_pattern, ring_pattern, gradient_pattern, stripe_pattern, blended_pattern, z_stripe_pattern, pertrubed_pattern
 
 
 # Run: python3 main.py
@@ -557,6 +557,9 @@ def create_perturbed_scene():
     middle.material.color = Color(0.1, 1, 0.5)
     middle.material.diffuse = 0.7
     middle.material.specular = 0.3
+    base_pattern = ring_pattern(Color(1, 0, 0), Color(0, 1, 0))
+    perturbed = pertrubed_pattern(base_pattern, scale=2.0, amplitude=0.3)
+    middle.material.pattern = perturbed
     world.objects.append(middle)
 
     right = Sphere()

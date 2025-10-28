@@ -353,7 +353,6 @@ def prepare_computations(intersection, ray):
         comps.normalv = -comps.normalv
         comps.reflectv = reflect(ray.direction, comps.normalv)
         comps.over_point = comps.point + comps.normalv * EPSILON
-        print("hey")
     else:
         comps.over_point = comps.point + comps.normalv * EPSILON
         comps.inside = False
