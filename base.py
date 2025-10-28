@@ -1,7 +1,7 @@
 from utils import auto_str, EPSILON
 from math import fabs
 from utils import MATRIX_EPSILON
-import copy
+import numpy as np
 
 @auto_str
 class Tuple:
@@ -194,15 +194,14 @@ class Ray:
 @auto_str
 class Matrix:
     def __init__(self, matrix):
-        self.matrix = matrix
+        self.matrix = np.array(matrix, dtype=np.float64)
 
     def __len__(self):
-        if type(self.matrix) is list:
-            return len(self.matrix)
+        return len(self.matrix)
 
     def __getitem__(self, indices):
         if type(indices) is tuple:
-            return self.matrix[indices[0]][indices[1]]
+            return self.matrix[indices[0], indices[1]]
         else:
             return self.matrix[indices]
 
@@ -263,17 +262,9 @@ class Matrix:
 
     @staticmethod
     def matrix_multiply(m1, m2):
-        subRow = []
-        returnMatrix = []
-        for i in range(len(m1)):
-            for j in range(len(m2[0])):
-                sums = 0
-                for k in range(len(m2)):
-                    sums = sums + (m1[i][k] * m2[k][j])
-                subRow.append(sums)
-            returnMatrix.append(subRow)
-            subRow = []
-        return Matrix(returnMatrix)
+        # m1 and m2 are already numpy arrays from Matrix.matrix
+        result = np.dot(m1, m2)
+        return Matrix(result)
 
 def transpose(matrix):
     rows = len(matrix)
@@ -289,32 +280,17 @@ def transpose(matrix):
 
 
 def determinant(matrix):
-    det = 0
-    if len(matrix) == 2:
-        det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
-    else:
-        for column in range(len(matrix)):
-            det = det + matrix[0, column] * cofactor(matrix, 0, column)
-    return det
+    return np.linalg.det(matrix.matrix)
 
 
-# Can this be done better?
-# more pythonic?
 def submatrix(matrix, row, col):
-    # Build submatrix manually without expensive deepcopy
-    size = len(matrix)
-    result = []
-
-    for r in range(size):
-        if r == row:
-            continue  # Skip the excluded row
-        new_row = []
-        for c in range(size):
-            if c == col:
-                continue  # Skip the excluded column
-            new_row.append(matrix[r][c])
-        result.append(new_row)
-
+    # Use NumPy boolean indexing for fast submatrix creation
+    np_matrix = matrix.matrix
+    row_mask = np.ones(np_matrix.shape[0], dtype=bool)
+    col_mask = np.ones(np_matrix.shape[1], dtype=bool)
+    row_mask[row] = False
+    col_mask[col] = False
+    result = np_matrix[np.ix_(row_mask, col_mask)]
     return Matrix(result)
 
 def generate_zero_matrix(square_size):
@@ -349,19 +325,8 @@ def inverse(matrix):
     if not matrix.invertible():
         raise ValueError("Matrix is not invertible")
 
-    rows = len(matrix)
-    columns = len(matrix[0])
-    determinant_value = determinant(matrix)
-    return_matrix = generate_zero_matrix(rows)
-
-    for row in range(rows):
-        for col in range(columns):
-            c = cofactor(matrix, row, col)
-            # the book used floating point nums to 5 decimals.  I dont think we care here
-            # so the rounding should be dropped. Work towards have a better equals method
-            return_matrix[col][row] = c / determinant_value
-
-    return return_matrix
+    inv_matrix = np.linalg.inv(matrix.matrix)
+    return Matrix(inv_matrix)
 
 # think about throwing error if vector is not passed in
 def dot(a, b):
