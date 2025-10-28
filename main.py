@@ -46,10 +46,20 @@ def convert_to_pixel_space(raw_coord):
 def outside_of_canvas(canvas, pos_x, pos_y):
     if pos_x < 0 or pos_x > canvas.width:
         return True
-    # elif pos_y < 0 or pos_y > canvas.height:
-    #     return True
+    elif pos_y < 0 or pos_y > canvas.height:
+        return True
     else:
         return False
+
+
+def draw_circle(canvas, center_x, center_y, radius, color):
+    """Draw a filled circle on the canvas"""
+    for dy in range(-radius, radius + 1):
+        for dx in range(-radius, radius + 1):
+            if dx * dx + dy * dy <= radius * radius:
+                px, py = center_x + dx, center_y + dy
+                if not outside_of_canvas(canvas, px, py):
+                    write_pixel(canvas, px, py, color)
 
 
 def ppm_projectile():
@@ -83,21 +93,24 @@ def clock():
     square_dimension = 900
     c = Canvas(square_dimension, square_dimension)
     point_color = Color(0, 1, 0)  # green
-    # Move each point from the middle. We scale here to spread the points a part from one another
-    middle_of_canvas_matrix = TransformationBuilder().scale(80, 0, 80).translate(square_dimension / 2, 0,
-                                                                                 square_dimension / 2).build()
 
     twelve = Point(0, 0, 1)
+    scale_factor = 350
+    translate_offset = square_dimension / 2
 
     for interval in range(0, 12):
         r = rotation_y(interval * (math.pi / 6))
         hour_mark = r * twelve
-        translated_point = middle_of_canvas_matrix * hour_mark
-        print(translated_point)
+
+        # Manual transformation: scale first, then translate
+        scaled_point = Point(hour_mark.tuple.x * scale_factor, hour_mark.tuple.y, hour_mark.tuple.z * scale_factor)
+        translated_point = Point(scaled_point.tuple.x + translate_offset, scaled_point.tuple.y, scaled_point.tuple.z + translate_offset)
+
         x = convert_to_pixel_space(translated_point.tuple.x)
         y = convert_to_pixel_space(translated_point.tuple.z)
-        if not outside_of_canvas(c, x, y):
-            write_pixel(c, x, y, point_color)
+
+        # Draw a larger, more visible hour mark
+        draw_circle(c, x, y, 8, point_color)
 
     canvas_to_ppm(c)
 
@@ -140,7 +153,7 @@ def ray_cast_sphere_lighting():
                 point = position_along_ray(r, xs[0].t)  # todo: this intersection should be the closest
                 normal = normal_at(xs[0].s_object, point)
                 eye = -r.direction
-                color = lighting(xs[0].s_object.material, light, point, eye, normal)
+                color = lighting(xs[0].s_object.material, xs[0].s_object, light, point, eye, normal)
                 write_pixel(canvas, x, y, color)
 
     canvas_to_ppm(canvas)

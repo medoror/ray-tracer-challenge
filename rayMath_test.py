@@ -67,6 +67,12 @@ from math import sqrt
 # Run: python -m unittest rayMath_test.py
 
 class TestRayMath(unittest.TestCase):
+    def assertFloatEqual(self, first, second, msg=None):
+        """Assert that two values are equal within floating point tolerance"""
+        from math import fabs
+        if not (fabs(first - second) < EPSILON):
+            raise AssertionError(f'{first} != {second} (difference: {fabs(first - second)}, tolerance: {EPSILON})')
+
     def test_tuple_is_a_point(self):
         a = Tuple(4.3, -4.2, 3.1, 1.0)
         self.assertEqual(a.x, 4.3)
@@ -402,7 +408,7 @@ class TestRayMath(unittest.TestCase):
     def test_calculate_determinant_of_2x2_matrix(self):
         A = Matrix([[1, 5], [-3, 2]])
 
-        self.assertEqual(determinant(A), 17)
+        self.assertFloatEqual(determinant(A), 17)
 
     def test_submatrix_of_3x3_matrix_is_a_2x2_matrix(self):
         A = Matrix([[1, 5, 0],
@@ -426,27 +432,27 @@ class TestRayMath(unittest.TestCase):
                     [2, -1, -7],
                     [6, -1, 5]])
 
-        self.assertEqual(minor(A, 1, 0), 25)
+        self.assertFloatEqual(minor(A, 1, 0), 25)
 
     def test_calculate_cofactor_of_3x3_matrix(self):
         A = Matrix([[3, 5, 0],
                     [2, -1, -7],
                     [6, -1, 5]])
 
-        self.assertEqual(minor(A, 0, 0), -12)
-        self.assertEqual(cofactor(A, 0, 0), -12)
-        self.assertEqual(minor(A, 1, 0), 25)
-        self.assertEqual(cofactor(A, 1, 0), -25)
+        self.assertFloatEqual(minor(A, 0, 0), -12)
+        self.assertFloatEqual(cofactor(A, 0, 0), -12)
+        self.assertFloatEqual(minor(A, 1, 0), 25)
+        self.assertFloatEqual(cofactor(A, 1, 0), -25)
 
     def test_calculate_determinant_of_3x3_matrix(self):
         A = Matrix([[1, 2, 6],
                     [-5, 8, -4],
                     [2, 6, 4]])
 
-        self.assertEqual(cofactor(A, 0, 0), 56)
-        self.assertEqual(cofactor(A, 0, 1), 12)
-        self.assertEqual(cofactor(A, 0, 2), -46)
-        self.assertEqual(determinant(A), -196)
+        self.assertFloatEqual(cofactor(A, 0, 0), 56)
+        self.assertFloatEqual(cofactor(A, 0, 1), 12)
+        self.assertFloatEqual(cofactor(A, 0, 2), -46)
+        self.assertFloatEqual(determinant(A), -196)
 
     def test_calculate_determinant_of_4x4_matrix(self):
         A = Matrix([[-2, -8, 3, 5],
@@ -454,11 +460,11 @@ class TestRayMath(unittest.TestCase):
                     [1, 2, -9, 6],
                     [-6, 7, 7, -9]])
 
-        self.assertEqual(cofactor(A, 0, 0), 690)
-        self.assertEqual(cofactor(A, 0, 1), 447)
-        self.assertEqual(cofactor(A, 0, 2), 210)
-        self.assertEqual(cofactor(A, 0, 3), 51)
-        self.assertEqual(determinant(A), -4071)
+        self.assertFloatEqual(cofactor(A, 0, 0), 690)
+        self.assertFloatEqual(cofactor(A, 0, 1), 447)
+        self.assertFloatEqual(cofactor(A, 0, 2), 210)
+        self.assertFloatEqual(cofactor(A, 0, 3), 51)
+        self.assertFloatEqual(determinant(A), -4071)
 
     def test_invertible_matrix_for_invertibility(self):
         A = Matrix([[6, 4, 4, 4],
@@ -466,7 +472,7 @@ class TestRayMath(unittest.TestCase):
                     [4, -9, 3, -7],
                     [9, 1, 7, -6]])
 
-        self.assertEqual(determinant(A), -2120)
+        self.assertFloatEqual(determinant(A), -2120)
         self.assertEqual(A.invertible(), True)
 
     def test_noninvertible_matrix_for_invertibility(self):
@@ -475,7 +481,7 @@ class TestRayMath(unittest.TestCase):
                     [0, -5, 1, -5],
                     [0, 0, 0, 0]])
 
-        self.assertEqual(determinant(A), 0)
+        self.assertFloatEqual(determinant(A), 0)
         self.assertEqual(A.invertible(), False)
 
     def test_calc_inverse_of_matrix(self):
@@ -489,11 +495,11 @@ class TestRayMath(unittest.TestCase):
                                     [-0.80827, -1.45677, -0.44361, 0.52068],
                                     [-0.07895, -0.22368, -0.05263, 0.19737],
                                     [-0.52256, -0.81391, -0.30075, 0.30639]]))
-        self.assertEqual(determinant(A), 532)
-        self.assertEqual(cofactor(A, 2, 3), -160)
-        self.assertEqual(B[3, 2], -160 / 532, 5)
-        self.assertEqual(cofactor(A, 3, 2), 105)
-        self.assertEqual(B[2, 3], 105 / 532, 5)
+        self.assertFloatEqual(determinant(A), 532)
+        self.assertFloatEqual(cofactor(A, 2, 3), -160)
+        self.assertAlmostEqual(B[3, 2], -160 / 532, 5)
+        self.assertFloatEqual(cofactor(A, 3, 2), 105)
+        self.assertAlmostEqual(B[2, 3], 105 / 532, 5)
 
         A = Matrix([[8, -5, 9, 2],
                     [7, 5, 6, 1],

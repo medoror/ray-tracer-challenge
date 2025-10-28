@@ -201,7 +201,7 @@ class Matrix:
 
     def __getitem__(self, indices):
         if type(indices) is tuple:
-            return self.matrix[indices[0], indices[1]]
+            return float(self.matrix[indices[0], indices[1]])
         else:
             return self.matrix[indices]
 
@@ -280,7 +280,7 @@ def transpose(matrix):
 
 
 def determinant(matrix):
-    return np.linalg.det(matrix.matrix)
+    return float(np.linalg.det(matrix.matrix))
 
 
 def submatrix(matrix, row, col):

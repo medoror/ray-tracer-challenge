@@ -58,7 +58,7 @@ plane_pattern:
     @{{python_cmd}} -c "from main import create_plane_pattern_scene; create_plane_pattern_scene()"
     @open canvas.ppm || echo "Could not open canvas.ppm"
 
-create_perturbed_scene:
+perturbed_scene:
     @{{python_cmd}} -c "from main import create_perturbed_scene; create_perturbed_scene()"
     @open canvas.ppm || echo "Could not open canvas.ppm"
 
